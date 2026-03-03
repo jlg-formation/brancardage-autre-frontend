@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Écran - Accueil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-200 flex items-center justify-center min-h-screen">
+    <!-- Cadre du téléphone -->
+    <div
+      class="w-[336px] h-[584px] bg-black rounded-[2rem] p-2 shadow-2xl relative"
+    >
+      <!-- Écran interne (320x568) -->
+      <div
+        class="w-[320px] h-[568px] bg-gray-50 rounded-[1.5rem] overflow-hidden relative flex flex-col"
+      >
+        <!-- Header -->
+        <div
+          class="bg-blue-600 text-white px-4 py-4 flex items-center justify-between shadow-md z-10"
+        >
+          <h1 class="text-lg font-semibold">Brancardage</h1>
+          <div
+            class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-sm font-bold"
+          >
+            PS
+          </div>
+        </div>
+
+        <!-- Contenu de l'écran -->
+        <div class="flex-1 overflow-y-auto p-4 flex flex-col">
+          <div class="mb-6 mt-2">
+            <h2 class="text-xl font-bold text-gray-900">Nouvelle demande</h2>
+            <p class="text-sm text-gray-500 mt-1">
+              Identifiez le patient pour commencer.
+            </p>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Option 1: Scan -->
+            <a
+              href="03-scan-bracelet.html"
+              class="block p-4 bg-white border-2 border-transparent rounded-2xl shadow-sm hover:border-blue-500 hover:bg-blue-50 transition group"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                    ></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900">
+                    Scanner le bracelet
+                  </h3>
+                  <p class="text-xs text-gray-500 mt-1">
+                    QR Code ou Code-barres
+                  </p>
+                </div>
+              </div>
+            </a>
+
+            <!-- Option 2: Manuel -->
+            <a
+              href="02-recherche-manuelle.html"
+              class="block p-4 bg-white border-2 border-transparent rounded-2xl shadow-sm hover:border-blue-500 hover:bg-blue-50 transition group"
+            >
+              <div class="flex items-center gap-4">
+                <div
+                  class="w-12 h-12 bg-gray-100 text-gray-600 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900">
+                    Recherche manuelle
+                  </h3>
+                  <p class="text-xs text-gray-500 mt-1">
+                    Nom, Prénom, IPP, Sécu...
+                  </p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="mt-auto pt-6">
+            <h3 class="text-sm font-semibold text-gray-900 mb-3">
+              Demandes récentes
+            </h3>
+            <div
+              class="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center justify-between opacity-60"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center text-xs font-bold"
+                >
+                  ML
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">Marie Laurent</p>
+                  <p class="text-xs text-gray-500">Terminé à 10:42</p>
+                </div>
+              </div>
+              <svg
+                class="w-4 h-4 text-teal-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

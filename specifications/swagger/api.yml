@@ -1,0 +1,1245 @@
+openapi: 3.0.3
+info:
+  title: API Brancardage Hospitalier
+  description: |
+    API REST pour la gestion des demandes de brancardage dans un centre hospitalier.
+
+    Cette API permet de :
+    - Rechercher et consulter les dossiers patients
+    - Créer des demandes de transport (brancardage)
+    - Gérer les médias associés aux demandes (photos, documents)
+    - Récupérer la liste des destinations disponibles dans l'établissement
+
+    **Contexte métier :**
+    L'application de brancardage permet au personnel soignant d'identifier un patient 
+    (par recherche manuelle ou scan de bracelet), de créer une demande de transport 
+    avec localisation GPS et destination, et d'y joindre des médias (photos, documents scannés).
+  version: 1.0.0
+  contact:
+    name: DSI Centre Hospitalier
+    email: dsi@hopital.fr
+  license:
+    name: Propriétaire
+    url: https://hopital.internal/license
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Serveur de développement local
+  - url: https://staging.hopital.internal/api/v1
+    description: Serveur de staging (validation)
+  - url: https://api.hopital.internal/api/v1
+    description: Serveur de production
+
+tags:
+  - name: Patients
+    description: Gestion et recherche des patients
+  - name: Brancardage
+    description: Création et gestion des demandes de brancardage
+  - name: Destinations
+    description: Gestion des lieux et services de l'établissement
+  - name: Médias
+    description: Upload et gestion des fichiers médias (photos, documents)
+
+paths:
+  /patients:
+    get:
+      tags:
+        - Patients
+      summary: Rechercher des patients
+      description: |
+        Recherche de patients selon différents critères. 
+        Au moins un critère de recherche doit être fourni.
+        Les critères nom/prénom effectuent une recherche partielle (LIKE).
+        Les critères IPP et numéro de sécurité sociale effectuent une recherche exacte.
+      operationId: searchPatients
+      parameters:
+        - name: nom
+          in: query
+          description: Nom de famille du patient (recherche partielle, insensible à la casse)
+          required: false
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+          example: Dupont
+        - name: prenom
+          in: query
+          description: Prénom du patient (recherche partielle, insensible à la casse)
+          required: false
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+          example: Jean
+        - name: ipp
+          in: query
+          description: Identifiant Permanent du Patient (recherche exacte)
+          required: false
+          schema:
+            type: string
+            pattern: '^\d{9}$'
+          example: "123456789"
+        - name: numeroSecuriteSociale
+          in: query
+          description: Numéro de sécurité sociale français (13 chiffres + clé 2 chiffres)
+          required: false
+          schema:
+            type: string
+            pattern: '^\d{15}$'
+          example: "180057512345678"
+        - name: page
+          in: query
+          description: Numéro de page pour la pagination (commence à 0)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          example: 0
+        - name: size
+          in: query
+          description: Nombre d'éléments par page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          example: 20
+      responses:
+        "200":
+          description: Liste des patients correspondant aux critères de recherche
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatientSearchResponse"
+              example:
+                content:
+                  - id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                    ipp: "123456789"
+                    nom: "Dupont"
+                    prenom: "Jean"
+                    dateNaissance: "1980-05-12"
+                    sexe: "M"
+                    chambre: "204"
+                    service: "Cardiologie"
+                    batiment: "A"
+                    etage: 2
+                totalElements: 1
+                totalPages: 1
+                page: 0
+                size: 20
+        "400":
+          description: Requête invalide (aucun critère fourni ou paramètres incorrects)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "INVALID_REQUEST"
+                message: "Au moins un critère de recherche doit être fourni"
+                timestamp: "2026-02-25T10:30:00Z"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /patients/{id}:
+    get:
+      tags:
+        - Patients
+      summary: Récupérer un dossier patient
+      description: |
+        Récupère les informations complètes d'un patient par son identifiant unique.
+        Inclut les alertes médicales et précautions éventuelles.
+      operationId: getPatientById
+      parameters:
+        - name: id
+          in: path
+          description: Identifiant unique du patient (UUID)
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+      responses:
+        "200":
+          description: Dossier patient trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+              example:
+                id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                ipp: "123456789"
+                nom: "Dupont"
+                prenom: "Jean"
+                dateNaissance: "1980-05-12"
+                sexe: "M"
+                chambre: "204"
+                service: "Cardiologie"
+                batiment: "A"
+                etage: 2
+                alertesMedicales:
+                  - type: "PRECAUTION"
+                    titre: "Précautions"
+                    description: "Patient sous perfusion. Nécessite une potence à sérum."
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Patient non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "PATIENT_NOT_FOUND"
+                message: "Aucun patient trouvé avec l'identifiant spécifié"
+                timestamp: "2026-02-25T10:30:00Z"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /patients/by-ipp/{ipp}:
+    get:
+      tags:
+        - Patients
+      summary: Récupérer un patient par IPP
+      description: |
+        Récupère les informations d'un patient par son IPP (Identifiant Permanent du Patient).
+        Endpoint utilisé principalement après le scan d'un bracelet patient contenant l'IPP.
+      operationId: getPatientByIpp
+      parameters:
+        - name: ipp
+          in: path
+          description: Identifiant Permanent du Patient (9 chiffres)
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{9}$'
+          example: "123456789"
+      responses:
+        "200":
+          description: Patient trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Aucun patient avec cet IPP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "PATIENT_NOT_FOUND"
+                message: "Aucun patient trouvé avec l'IPP spécifié"
+                timestamp: "2026-02-25T10:30:00Z"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /destinations:
+    get:
+      tags:
+        - Destinations
+      summary: Lister les destinations disponibles
+      description: |
+        Récupère la liste des destinations possibles dans l'établissement hospitalier.
+        Permet de filtrer par recherche textuelle et de récupérer les destinations fréquentes.
+      operationId: getDestinations
+      parameters:
+        - name: recherche
+          in: query
+          description: Terme de recherche pour filtrer les destinations (nom du service, bâtiment)
+          required: false
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+          example: "Radio"
+        - name: frequentes
+          in: query
+          description: Si true, retourne uniquement les destinations fréquemment utilisées
+          required: false
+          schema:
+            type: boolean
+            default: false
+          example: true
+      responses:
+        "200":
+          description: Liste des destinations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Destination"
+              example:
+                - id: "dest-001"
+                  nom: "Radiologie"
+                  batiment: "B"
+                  etage: 0
+                  etageLibelle: "RDC"
+                  frequente: true
+                - id: "dest-002"
+                  nom: "Bloc Opératoire"
+                  batiment: "A"
+                  etage: 1
+                  etageLibelle: "Étage 1"
+                  frequente: true
+                - id: "dest-003"
+                  nom: "Urgences"
+                  batiment: "C"
+                  etage: 0
+                  etageLibelle: "RDC"
+                  frequente: true
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /destinations/{id}:
+    get:
+      tags:
+        - Destinations
+      summary: Récupérer une destination par son ID
+      description: Récupère les détails d'une destination spécifique.
+      operationId: getDestinationById
+      parameters:
+        - name: id
+          in: path
+          description: Identifiant unique de la destination
+          required: true
+          schema:
+            type: string
+          example: "dest-001"
+      responses:
+        "200":
+          description: Destination trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Destination"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Destination non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /brancardages:
+    post:
+      tags:
+        - Brancardage
+      summary: Créer une demande de brancardage
+      description: |
+        Crée une nouvelle demande de transport patient (brancardage).
+        La demande inclut :
+        - L'identification du patient
+        - Le lieu de départ (coordonnées GPS et/ou description textuelle)
+        - La destination choisie
+        - Les médias associés (optionnel)
+      operationId: createBrancardage
+      requestBody:
+        description: Données de la demande de brancardage
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrancardageRequest"
+            example:
+              patientId: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+              depart:
+                latitude: 48.8566
+                longitude: 2.3522
+                description: "Bâtiment A - Cardiologie (Ch. 204)"
+                batiment: "A"
+                etage: 2
+                chambre: "204"
+              destinationId: "dest-002"
+              mediaIds:
+                - "media-001"
+              commentaire: "Patient sous perfusion, prévoir potence à sérum"
+      responses:
+        "201":
+          description: Demande de brancardage créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrancardageResponse"
+              example:
+                id: "bran-12345"
+                statut: "EN_ATTENTE"
+                dateCreation: "2026-02-25T10:30:00Z"
+                patient:
+                  id: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+                  nom: "Dupont"
+                  prenom: "Jean"
+                  ipp: "123456789"
+                depart:
+                  description: "Bâtiment A - Cardiologie (Ch. 204)"
+                  batiment: "A"
+                  etage: 2
+                  chambre: "204"
+                destination:
+                  id: "dest-002"
+                  nom: "Bloc Opératoire"
+                  batiment: "A"
+                  etage: 1
+                medias:
+                  - id: "media-001"
+                    url: "/uploads/media-001.jpg"
+                    type: "PHOTO"
+                    mimeType: "image/jpeg"
+                    dateUpload: "2026-02-25T10:25:00Z"
+                commentaire: "Patient sous perfusion, prévoir potence à sérum"
+        "400":
+          description: Requête invalide (données manquantes ou incorrectes)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "INVALID_REQUEST"
+                message: "Le patient spécifié n'existe pas"
+                timestamp: "2026-02-25T10:30:00Z"
+                details:
+                  - field: "patientId"
+                    message: "Patient introuvable"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: Entité non traitable (validation métier échouée)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "VALIDATION_ERROR"
+                message: "La destination spécifiée n'est pas disponible"
+                timestamp: "2026-02-25T10:30:00Z"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    get:
+      tags:
+        - Brancardage
+      summary: Lister les demandes de brancardage
+      description: |
+        Récupère la liste des demandes de brancardage.
+        Permet de filtrer par statut et de paginer les résultats.
+      operationId: listBrancardages
+      parameters:
+        - name: statut
+          in: query
+          description: Filtrer par statut de la demande
+          required: false
+          schema:
+            type: string
+            enum:
+              - EN_ATTENTE
+              - EN_COURS
+              - TERMINE
+              - ANNULE
+          example: "EN_ATTENTE"
+        - name: patientId
+          in: query
+          description: Filtrer par identifiant patient
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          description: Numéro de page (commence à 0)
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          description: Nombre d'éléments par page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: Liste des demandes de brancardage
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrancardageListResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /brancardages/{id}:
+    get:
+      tags:
+        - Brancardage
+      summary: Récupérer une demande de brancardage
+      description: Récupère les détails d'une demande de brancardage spécifique.
+      operationId: getBrancardageById
+      parameters:
+        - name: id
+          in: path
+          description: Identifiant unique de la demande de brancardage
+          required: true
+          schema:
+            type: string
+          example: "bran-12345"
+      responses:
+        "200":
+          description: Demande de brancardage trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrancardageResponse"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Demande non trouvée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /medias:
+    post:
+      tags:
+        - Médias
+      summary: Uploader un fichier média
+      description: |
+        Upload un fichier média (photo ou document scanné) pour l'associer à une demande de brancardage.
+
+        Types de fichiers acceptés :
+        - Images : JPEG, PNG (max 10 Mo)
+        - Documents : PDF (max 5 Mo)
+
+        L'image sera automatiquement compressée si nécessaire.
+      operationId: uploadMedia
+      requestBody:
+        description: Fichier à uploader
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Fichier à uploader (image ou document)
+                type:
+                  type: string
+                  enum:
+                    - PHOTO
+                    - DOCUMENT
+                  default: PHOTO
+                  description: Type de média
+                description:
+                  type: string
+                  maxLength: 500
+                  description: Description optionnelle du média
+      responses:
+        "201":
+          description: Fichier uploadé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Media"
+              example:
+                id: "media-001"
+                url: "/uploads/media-001.jpg"
+                type: "PHOTO"
+                mimeType: "image/jpeg"
+                taille: 245678
+                dateUpload: "2026-02-25T10:25:00Z"
+                description: "Photo de l'équipement requis"
+        "400":
+          description: Requête invalide (fichier manquant ou format non supporté)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "INVALID_FILE"
+                message: "Format de fichier non supporté. Formats acceptés : JPEG, PNG, PDF"
+                timestamp: "2026-02-25T10:30:00Z"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "413":
+          description: Fichier trop volumineux
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "FILE_TOO_LARGE"
+                message: "Le fichier dépasse la taille maximale autorisée (10 Mo pour les images, 5 Mo pour les documents)"
+                timestamp: "2026-02-25T10:30:00Z"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /medias/{id}:
+    get:
+      tags:
+        - Médias
+      summary: Récupérer les métadonnées d'un média
+      description: Récupère les informations d'un fichier média uploadé.
+      operationId: getMediaById
+      parameters:
+        - name: id
+          in: path
+          description: Identifiant unique du média
+          required: true
+          schema:
+            type: string
+          example: "media-001"
+      responses:
+        "200":
+          description: Média trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Media"
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Média non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags:
+        - Médias
+      summary: Supprimer un média
+      description: |
+        Supprime un fichier média.
+        Un média ne peut être supprimé que s'il n'est pas encore associé à une demande de brancardage validée.
+      operationId: deleteMedia
+      parameters:
+        - name: id
+          in: path
+          description: Identifiant unique du média
+          required: true
+          schema:
+            type: string
+          example: "media-001"
+      responses:
+        "204":
+          description: Média supprimé avec succès
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Média non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Conflit - Le média est associé à une demande validée
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: "MEDIA_IN_USE"
+                message: "Ce média est associé à une demande de brancardage et ne peut pas être supprimé"
+                timestamp: "2026-02-25T10:30:00Z"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /uploads/{filename}:
+    get:
+      tags:
+        - Médias
+      summary: Télécharger un fichier média
+      description: Télécharge le fichier binaire d'un média uploadé.
+      operationId: downloadMedia
+      parameters:
+        - name: filename
+          in: path
+          description: Nom du fichier à télécharger
+          required: true
+          schema:
+            type: string
+          example: "media-001.jpg"
+      responses:
+        "200":
+          description: Fichier retourné
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: Non authentifié
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Fichier non trouvé
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Erreur serveur interne
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Authentification par token JWT.
+        Le token doit être passé dans le header Authorization : `Bearer <token>`
+
+  schemas:
+    Patient:
+      type: object
+      description: Représentation complète d'un dossier patient
+      required:
+        - id
+        - ipp
+        - nom
+        - prenom
+        - dateNaissance
+        - sexe
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique du patient (UUID)
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        ipp:
+          type: string
+          pattern: '^\d{9}$'
+          description: Identifiant Permanent du Patient (9 chiffres)
+          example: "123456789"
+        numeroSecuriteSociale:
+          type: string
+          pattern: '^\d{15}$'
+          description: Numéro de sécurité sociale (15 chiffres)
+          example: "180057512345678"
+        nom:
+          type: string
+          description: Nom de famille du patient
+          example: "Dupont"
+        prenom:
+          type: string
+          description: Prénom du patient
+          example: "Jean"
+        dateNaissance:
+          type: string
+          format: date
+          description: Date de naissance au format ISO 8601 (YYYY-MM-DD)
+          example: "1980-05-12"
+        sexe:
+          type: string
+          enum:
+            - M
+            - F
+          description: Sexe du patient (M = Masculin, F = Féminin)
+          example: "M"
+        age:
+          type: integer
+          description: Âge calculé du patient en années
+          example: 45
+        chambre:
+          type: string
+          description: Numéro de chambre actuelle
+          example: "204"
+        service:
+          type: string
+          description: Service hospitalier actuel
+          example: "Cardiologie"
+        batiment:
+          type: string
+          description: Bâtiment où se trouve le patient
+          example: "A"
+        etage:
+          type: integer
+          description: Numéro d'étage (0 = RDC)
+          example: 2
+        alertesMedicales:
+          type: array
+          description: Liste des alertes et précautions médicales
+          items:
+            $ref: "#/components/schemas/AlerteMedicale"
+
+    AlerteMedicale:
+      type: object
+      description: Alerte ou précaution médicale associée au patient
+      required:
+        - type
+        - titre
+      properties:
+        type:
+          type: string
+          enum:
+            - ALLERGIE
+            - PRECAUTION
+            - ISOLEMENT
+            - AUTRE
+          description: Type d'alerte médicale
+          example: "PRECAUTION"
+        titre:
+          type: string
+          description: Titre court de l'alerte
+          example: "Précautions"
+        description:
+          type: string
+          description: Description détaillée de l'alerte
+          example: "Patient sous perfusion. Nécessite une potence à sérum."
+
+    PatientSearchResponse:
+      type: object
+      description: Réponse paginée de la recherche de patients
+      required:
+        - content
+        - totalElements
+        - totalPages
+        - page
+        - size
+      properties:
+        content:
+          type: array
+          description: Liste des patients correspondant aux critères
+          items:
+            $ref: "#/components/schemas/Patient"
+        totalElements:
+          type: integer
+          description: Nombre total de patients correspondant aux critères
+          example: 1
+        totalPages:
+          type: integer
+          description: Nombre total de pages
+          example: 1
+        page:
+          type: integer
+          description: Numéro de la page courante (base 0)
+          example: 0
+        size:
+          type: integer
+          description: Nombre d'éléments par page
+          example: 20
+
+    Destination:
+      type: object
+      description: Lieu de destination dans l'établissement hospitalier
+      required:
+        - id
+        - nom
+        - batiment
+        - etage
+      properties:
+        id:
+          type: string
+          description: Identifiant unique de la destination
+          example: "dest-001"
+        nom:
+          type: string
+          description: Nom du service ou de l'unité
+          example: "Radiologie"
+        batiment:
+          type: string
+          description: Identifiant du bâtiment
+          example: "B"
+        etage:
+          type: integer
+          description: Numéro d'étage (0 = RDC)
+          example: 0
+        etageLibelle:
+          type: string
+          description: Libellé textuel de l'étage
+          example: "RDC"
+        frequente:
+          type: boolean
+          description: Indique si cette destination est fréquemment utilisée
+          example: true
+
+    Localisation:
+      type: object
+      description: Localisation géographique et descriptive d'un lieu
+      properties:
+        latitude:
+          type: number
+          format: double
+          description: Latitude GPS
+          example: 48.8566
+        longitude:
+          type: number
+          format: double
+          description: Longitude GPS
+          example: 2.3522
+        description:
+          type: string
+          description: Description textuelle du lieu
+          example: "Bâtiment A - Cardiologie (Ch. 204)"
+        batiment:
+          type: string
+          description: Identifiant du bâtiment
+          example: "A"
+        etage:
+          type: integer
+          description: Numéro d'étage
+          example: 2
+        chambre:
+          type: string
+          description: Numéro de chambre (si applicable)
+          example: "204"
+
+    BrancardageRequest:
+      type: object
+      description: Requête de création d'une demande de brancardage
+      required:
+        - patientId
+        - depart
+        - destinationId
+      properties:
+        patientId:
+          type: string
+          format: uuid
+          description: Identifiant unique du patient à transporter
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        depart:
+          $ref: "#/components/schemas/Localisation"
+        destinationId:
+          type: string
+          description: Identifiant de la destination choisie
+          example: "dest-002"
+        mediaIds:
+          type: array
+          description: Liste des identifiants des médias à joindre à la demande
+          items:
+            type: string
+          example:
+            - "media-001"
+        commentaire:
+          type: string
+          maxLength: 1000
+          description: Commentaire ou instructions supplémentaires pour le brancardier
+          example: "Patient sous perfusion, prévoir potence à sérum"
+
+    BrancardageResponse:
+      type: object
+      description: Réponse contenant les détails d'une demande de brancardage
+      required:
+        - id
+        - statut
+        - dateCreation
+        - patient
+        - depart
+        - destination
+      properties:
+        id:
+          type: string
+          description: Identifiant unique de la demande de brancardage
+          example: "bran-12345"
+        statut:
+          type: string
+          enum:
+            - EN_ATTENTE
+            - EN_COURS
+            - TERMINE
+            - ANNULE
+          description: Statut actuel de la demande
+          example: "EN_ATTENTE"
+        dateCreation:
+          type: string
+          format: date-time
+          description: Date et heure de création de la demande
+          example: "2026-02-25T10:30:00Z"
+        datePriseEnCharge:
+          type: string
+          format: date-time
+          description: Date et heure de prise en charge par le brancardier
+          example: "2026-02-25T10:45:00Z"
+        dateTerminaison:
+          type: string
+          format: date-time
+          description: Date et heure de fin du transport
+          example: "2026-02-25T11:00:00Z"
+        patient:
+          $ref: "#/components/schemas/PatientResume"
+        depart:
+          $ref: "#/components/schemas/Localisation"
+        destination:
+          $ref: "#/components/schemas/Destination"
+        medias:
+          type: array
+          description: Liste des médias associés à la demande
+          items:
+            $ref: "#/components/schemas/Media"
+        commentaire:
+          type: string
+          description: Commentaire ou instructions supplémentaires
+          example: "Patient sous perfusion, prévoir potence à sérum"
+
+    PatientResume:
+      type: object
+      description: Résumé des informations patient (version allégée)
+      required:
+        - id
+        - nom
+        - prenom
+        - ipp
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifiant unique du patient
+          example: "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        nom:
+          type: string
+          description: Nom de famille
+          example: "Dupont"
+        prenom:
+          type: string
+          description: Prénom
+          example: "Jean"
+        ipp:
+          type: string
+          description: Identifiant Permanent du Patient
+          example: "123456789"
+
+    BrancardageListResponse:
+      type: object
+      description: Réponse paginée de la liste des demandes de brancardage
+      required:
+        - content
+        - totalElements
+        - totalPages
+        - page
+        - size
+      properties:
+        content:
+          type: array
+          description: Liste des demandes de brancardage
+          items:
+            $ref: "#/components/schemas/BrancardageResponse"
+        totalElements:
+          type: integer
+          description: Nombre total de demandes
+          example: 15
+        totalPages:
+          type: integer
+          description: Nombre total de pages
+          example: 1
+        page:
+          type: integer
+          description: Numéro de la page courante
+          example: 0
+        size:
+          type: integer
+          description: Nombre d'éléments par page
+          example: 20
+
+    Media:
+      type: object
+      description: Fichier média (photo ou document) associé à une demande
+      required:
+        - id
+        - url
+        - type
+        - mimeType
+        - dateUpload
+      properties:
+        id:
+          type: string
+          description: Identifiant unique du média
+          example: "media-001"
+        url:
+          type: string
+          description: URL relative pour accéder au fichier
+          example: "/uploads/media-001.jpg"
+        type:
+          type: string
+          enum:
+            - PHOTO
+            - DOCUMENT
+          description: Type de média
+          example: "PHOTO"
+        mimeType:
+          type: string
+          description: Type MIME du fichier
+          example: "image/jpeg"
+        taille:
+          type: integer
+          format: int64
+          description: Taille du fichier en octets
+          example: 245678
+        dateUpload:
+          type: string
+          format: date-time
+          description: Date et heure d'upload
+          example: "2026-02-25T10:25:00Z"
+        description:
+          type: string
+          description: Description optionnelle du média
+          example: "Photo de l'équipement requis"
+
+    ErrorResponse:
+      type: object
+      description: Réponse d'erreur standardisée
+      required:
+        - code
+        - message
+        - timestamp
+      properties:
+        code:
+          type: string
+          description: Code d'erreur technique
+          example: "INVALID_REQUEST"
+        message:
+          type: string
+          description: Message d'erreur lisible
+          example: "Au moins un critère de recherche doit être fourni"
+        timestamp:
+          type: string
+          format: date-time
+          description: Date et heure de l'erreur
+          example: "2026-02-25T10:30:00Z"
+        details:
+          type: array
+          description: Détails supplémentaires sur les erreurs de validation
+          items:
+            $ref: "#/components/schemas/ErrorDetail"
+
+    ErrorDetail:
+      type: object
+      description: Détail d'une erreur de validation sur un champ spécifique
+      properties:
+        field:
+          type: string
+          description: Nom du champ en erreur
+          example: "patientId"
+        message:
+          type: string
+          description: Message d'erreur pour ce champ
+          example: "Patient introuvable"
+
+security:
+  - bearerAuth: []

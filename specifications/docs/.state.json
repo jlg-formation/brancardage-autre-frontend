@@ -1,0 +1,16 @@
+{
+  "current_step": "completed",
+  "completed_docs": [
+    "01-contexte-vision.md",
+    "02-persona-parcours.md",
+    "03-user-stories-user-flows.md",
+    "04-specifications-fonctionnelles.md",
+    "05-architecture-decision-record.md",
+    "06-architecture-techniques.md",
+    "07-code-guidelines.md",
+    "08-tests-unitaire-et-e2e.md",
+    "09-ci-cd.md",
+    "10-exploitation-maintenance.md"
+  ],
+  "pending_clarifications": []
+}

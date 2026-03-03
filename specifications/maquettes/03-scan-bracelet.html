@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Écran - Scan Bracelet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-200 flex items-center justify-center min-h-screen">
+    <!-- Cadre du téléphone -->
+    <div
+      class="w-[336px] h-[584px] bg-black rounded-[2rem] p-2 shadow-2xl relative"
+    >
+      <!-- Écran interne (320x568) -->
+      <div
+        class="w-[320px] h-[568px] bg-gray-900 rounded-[1.5rem] overflow-hidden relative flex flex-col"
+      >
+        <!-- Header (Transparent pour la caméra) -->
+        <div
+          class="absolute top-0 left-0 right-0 text-white px-4 py-4 flex items-center gap-3 z-20 bg-gradient-to-b from-black/60 to-transparent"
+        >
+          <a
+            href="01-accueil.html"
+            class="p-1 hover:bg-white/20 rounded-full transition"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              ></path>
+            </svg>
+          </a>
+          <h1 class="text-lg font-semibold">Scanner le bracelet</h1>
+        </div>
+
+        <!-- Simulation de la caméra -->
+        <div
+          class="absolute inset-0 bg-gray-800 flex items-center justify-center z-0"
+        >
+          <!-- Image de fond floue simulant la caméra -->
+          <div
+            class="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1584982751601-97dcc096659c?ixlib=rb-4.0.3&auto=format&fit=crop&w=320&q=80')] bg-cover bg-center"
+          ></div>
+        </div>
+
+        <!-- Zone de scan -->
+        <div class="flex-1 flex flex-col items-center justify-center z-10 px-6">
+          <p
+            class="text-white text-center text-sm mb-8 font-medium drop-shadow-md"
+          >
+            Placez le code-barres ou QR Code du bracelet dans le cadre.
+          </p>
+
+          <!-- Cadre de visée -->
+          <div class="relative w-full aspect-square max-w-[240px]">
+            <!-- Coins du cadre -->
+            <div
+              class="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-lg"
+            ></div>
+            <div
+              class="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-lg"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-lg"
+            ></div>
+            <div
+              class="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-lg"
+            ></div>
+
+            <!-- Ligne de scan animée (simulation) -->
+            <div
+              class="absolute top-1/2 left-4 right-4 h-0.5 bg-red-500 shadow-[0_0_8px_2px_rgba(239,68,68,0.8)] animate-pulse"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Actions en bas -->
+        <div
+          class="absolute bottom-0 left-0 right-0 p-6 flex justify-center z-20 bg-gradient-to-t from-black/80 to-transparent"
+        >
+          <div class="flex gap-6">
+            <button
+              class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                ></path>
+              </svg>
+            </button>
+            <!-- Bouton de simulation de succès -->
+            <a
+              href="04-dossier-patient.html"
+              class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:bg-blue-700 transition animate-bounce"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 13l4 4L19 7"
+                ></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Écran - Localisation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-200 flex items-center justify-center min-h-screen">
+    <!-- Cadre du téléphone -->
+    <div
+      class="w-[336px] h-[584px] bg-black rounded-[2rem] p-2 shadow-2xl relative"
+    >
+      <!-- Écran interne (320x568) -->
+      <div
+        class="w-[320px] h-[568px] bg-gray-50 rounded-[1.5rem] overflow-hidden relative flex flex-col"
+      >
+        <!-- Header -->
+        <div
+          class="bg-blue-600 text-white px-4 py-4 flex items-center gap-3 shadow-md z-10"
+        >
+          <a
+            href="05-medias.html"
+            class="p-1 hover:bg-blue-700 rounded-full transition"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              ></path>
+            </svg>
+          </a>
+          <h1 class="text-lg font-semibold">Lieu de départ</h1>
+        </div>
+
+        <!-- Contenu de l'écran -->
+        <div class="flex-1 overflow-y-auto p-4 flex flex-col">
+          <div class="mb-6">
+            <h2 class="text-lg font-bold text-gray-900">
+              Où se trouve le patient ?
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+              La position a été détectée automatiquement via GPS.
+            </p>
+          </div>
+
+          <!-- Carte de localisation (Simulation) -->
+          <div
+            class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6"
+          >
+            <!-- Fausse carte -->
+            <div class="h-32 bg-gray-200 relative">
+              <div
+                class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=320&q=80')] bg-cover bg-center opacity-50"
+              ></div>
+              <!-- Marqueur -->
+              <div
+                class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+              >
+                <svg
+                  class="w-8 h-8 text-blue-600 drop-shadow-md"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Détails de la position -->
+            <div class="p-4">
+              <div class="flex items-start gap-3">
+                <div
+                  class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    ></path>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    ></path>
+                  </svg>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-gray-900">
+                    Bâtiment A - Cardiologie
+                  </h3>
+                  <p class="text-sm text-gray-500">Étage 2, Chambre 204</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modification manuelle -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-semibold text-gray-900">
+              Affiner la position (Optionnel)
+            </h3>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-700"
+                >Précisions pour le brancardier</label
+              >
+              <input
+                type="text"
+                placeholder="Ex: Attendre devant l'ascenseur"
+                class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              />
+            </div>
+          </div>
+
+          <!-- Bouton d'action -->
+          <div class="mt-auto pt-6">
+            <a
+              href="07-destination.html"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl shadow-md transition duration-200 flex justify-center items-center gap-2"
+            >
+              Confirmer le départ
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M14 5l7 7m0 0l-7 7m7-7H3"
+                ></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

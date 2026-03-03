@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Écran - Confirmation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-200 flex items-center justify-center min-h-screen">
+    <!-- Cadre du téléphone -->
+    <div
+      class="w-[336px] h-[584px] bg-black rounded-[2rem] p-2 shadow-2xl relative"
+    >
+      <!-- Écran interne (320x568) -->
+      <div
+        class="w-[320px] h-[568px] bg-teal-500 rounded-[1.5rem] overflow-hidden relative flex flex-col"
+      >
+        <!-- Contenu de l'écran -->
+        <div
+          class="flex-1 flex flex-col items-center justify-center p-6 text-center"
+        >
+          <!-- Icône de succès animée -->
+          <div
+            class="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 shadow-lg animate-bounce"
+          >
+            <svg
+              class="w-12 h-12 text-teal-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3"
+                d="M5 13l4 4L19 7"
+              ></path>
+            </svg>
+          </div>
+
+          <h1 class="text-2xl font-bold text-white mb-4">Demande envoyée !</h1>
+
+          <p class="text-teal-50 text-sm mb-8">
+            La demande de brancardage pour <strong>Jean Dupont</strong> a bien
+            été transmise. Un brancardier va être assigné sous peu.
+          </p>
+
+          <div class="bg-white/20 backdrop-blur-sm rounded-xl p-4 w-full mb-8">
+            <p
+              class="text-xs text-teal-100 uppercase tracking-wider font-bold mb-1"
+            >
+              Numéro de suivi
+            </p>
+            <p class="text-lg font-mono font-bold text-white">BRC-2026-084</p>
+          </div>
+
+          <!-- Bouton d'action -->
+          <div class="mt-auto w-full">
+            <a
+              href="01-accueil.html"
+              class="w-full bg-white hover:bg-gray-50 text-teal-600 font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 flex justify-center items-center gap-2"
+            >
+              Retour à l'accueil
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
