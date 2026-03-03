@@ -30,7 +30,7 @@
 
 ### Étape 2 : Navigation & Parcours utilisateur
 
-- [ ] **id003** - Connecter les écrans avec Navigation Compose
+- [x] **id003** - Connecter les écrans avec Navigation Compose
   - **Dépendances** : id002
   - **Docs** : [03-user-stories-user-flows.md](specifications/docs/03-user-stories-user-flows.md), [gradle/libs.versions.toml](gradle/libs.versions.toml)
   - **Livrable** : Parcours complet navigable :
@@ -135,19 +135,19 @@
 
 ## État du Projet
 
-**Phase actuelle :** Étape 2 - Navigation & Parcours utilisateur
+**Phase actuelle :** Étape 3 - Logique métier & ViewModels
 
 **État du code :**
 - ✅ Projet Android compilable
 - ✅ Jetpack Compose configuré
 - ✅ Design System implémenté (thème, couleurs, typographies, composants)
 - ✅ 9 écrans métier implémentés (données mockées)
-- ❌ Navigation non configurée
+- ✅ Navigation Compose configurée (parcours complet navigable)
 - ❌ ViewModels non créés
 - ❌ API non connectée
 
 **Prochaines étapes prioritaires :**
-1. Implémenter id003 : Connecter les écrans avec Navigation Compose
+1. Implémenter id004 : Ajouter les ViewModels et gestion d'état
 2. Implémenter id002 : Les 9 écrans en statique
 3. Implémenter id003 : Navigation entre les écrans
 

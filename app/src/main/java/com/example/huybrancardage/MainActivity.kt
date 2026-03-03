@@ -10,6 +10,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.example.huybrancardage.navigation.BrancardageNavGraph
 import com.example.huybrancardage.ui.screens.AccueilScreen
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 
@@ -19,8 +21,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HuyBrancardageTheme {
+                val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AccueilScreen(modifier = Modifier.padding(innerPadding))
+                    BrancardageNavGraph(
+                        navController = navController,
+                        modifier = Modifier.padding(innerPadding)
+                    )
                 }
             }
         }
