@@ -9,12 +9,12 @@
 
 ### Étape 1 : Setup minimal & Écrans statiques
 
-- [ ] **id001** - Initialiser le projet Android + Design System de base
+- [x] **id001** - Initialiser le projet Android + Design System de base
   - **Dépendances** : aucune
   - **Docs** : [06-architecture-techniques.md](specifications/docs/06-architecture-techniques.md), [02-design-system.html](specifications/ux/02-design-system.html)
   - **Livrable** : Projet compilé avec thème personnalisé, typographies, couleurs, et composants réutilisables (Buttons, Cards, TextFields)
 
-- [ ] **id002** - Implémenter tous les écrans en statique (données mockées)
+- [x] **id002** - Implémenter tous les écrans en statique (données mockées)
   - **Dépendances** : id001
   - **Docs** : [01-accueil.html](specifications/maquettes/01-accueil.html) → [09-confirmation.html](specifications/maquettes/09-confirmation.html), [04-specifications-fonctionnelles.md](specifications/docs/04-specifications-fonctionnelles.md)
   - **Livrable** : Les 9 écrans affichables avec données en dur :
@@ -135,19 +135,19 @@
 
 ## État du Projet
 
-**Phase actuelle :** Avant Étape 1
+**Phase actuelle :** Étape 2 - Navigation & Parcours utilisateur
 
 **État du code :**
 - ✅ Projet Android compilable
 - ✅ Jetpack Compose configuré
-- ❌ Design System non implémenté
-- ❌ Aucun écran métier implémenté
+- ✅ Design System implémenté (thème, couleurs, typographies, composants)
+- ✅ 9 écrans métier implémentés (données mockées)
 - ❌ Navigation non configurée
 - ❌ ViewModels non créés
 - ❌ API non connectée
 
 **Prochaines étapes prioritaires :**
-1. Implémenter id001 : Design System (thème, couleurs, composants)
+1. Implémenter id003 : Connecter les écrans avec Navigation Compose
 2. Implémenter id002 : Les 9 écrans en statique
 3. Implémenter id003 : Navigation entre les écrans
 

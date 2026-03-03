@@ -34,6 +34,7 @@ Tu es un **développeur senior Android** expert en :
 
 - Code source implémentant la fonctionnalité
 - Fichier `/ROADMAP.md` mis à jour (tâche cochée)
+- Rapport d'implémentation `/<IDXXX>_IMPLEMENTATION.md`
 - **Ne pas committer** les changements
 
 ## Contexte
@@ -73,37 +74,78 @@ Après :
 
 ## Méthode de travail
 
-Procède en **6 étapes** :
+Procède en **7 étapes** :
 
 1. **Identifier la tâche**
-    - Si tâche spécifiée → la localiser dans `/ROADMAP.md`
-    - Si aucune tâche → parcourir la ROADMAP et trouver la première tâche non cochée dont toutes les dépendances sont cochées
+   - Si tâche spécifiée → la localiser dans `/ROADMAP.md`
+   - Si aucune tâche → parcourir la ROADMAP et trouver la première tâche non cochée dont toutes les dépendances sont cochées
 
 2. **Vérifier les dépendances**
-    - Lister les IDs de dépendances de la tâche
-    - Confirmer que chaque dépendance est cochée `[x]`
-    - Si une dépendance n'est pas satisfaite → **STOP** et informer l'utilisateur
+   - Lister les IDs de dépendances de la tâche
+   - Confirmer que chaque dépendance est cochée `[x]`
+   - Si une dépendance n'est pas satisfaite → **STOP** et informer l'utilisateur
 
 3. **Consulter la documentation**
-    - Lire les documents listés dans le champ **Docs** de la tâche
-    - Analyser les maquettes HTML si c'est un écran
-    - Vérifier l'API dans `/specifications/swagger/api.yml` si nécessaire
+   - Lire les documents listés dans le champ **Docs** de la tâche
+   - Analyser les maquettes HTML si c'est un écran
+   - Vérifier l'API dans `/specifications/swagger/api.yml` si nécessaire
 
 4. **Implémenter la fonctionnalité**
-    - Créer/modifier les fichiers nécessaires
-    - Respecter l'architecture existante du projet
-    - Écrire les tests unitaires associés
+   - Créer/modifier les fichiers nécessaires
+   - Respecter l'architecture existante du projet
+   - Écrire les tests unitaires associés
 
 5. **Vérifier et tester** ⚠️ ÉTAPE CRITIQUE
-    - **Compilation** : Vérifier que le projet compile sans erreur (`./gradlew build`)
-    - **Tests unitaires** : Exécuter les tests (`./gradlew test`) et corriger les échecs
-    - **Tests UI** : Si écran implémenté, vérifier visuellement le rendu
-    - **Lint** : Vérifier l'absence d'erreurs de lint (`./gradlew lint`)
-    - **Ne cocher la tâche QUE si tous les tests passent**
+   - **Compilation** : Vérifier que le projet compile sans erreur (`./gradlew build`)
+   - **Tests unitaires** : Exécuter les tests (`./gradlew test`) et corriger les échecs
+   - **Tests UI** : Si écran implémenté, vérifier visuellement le rendu
+   - **Lint** : Vérifier l'absence d'erreurs de lint (`./gradlew lint`)
+   - **Ne cocher la tâche QUE si tous les tests passent**
 
 6. **Mettre à jour la ROADMAP**
-    - Cocher la case de la tâche terminée `[x]` **uniquement après validation des tests**
-    - Ne pas committer
+   - Cocher la case de la tâche terminée `[x]` **uniquement après validation des tests**
+   - Ne pas committer
+
+7. **Générer le rapport d'implémentation**
+   - Créer le fichier `/<IDXXX>_IMPLEMENTATION.md` (ex: `/id010_IMPLEMENTATION.md`)
+   - Documenter ce qui a été fait, les fichiers créés/modifiés, les résultats des tests
+
+### Format du rapport d'implémentation
+
+```markdown
+# Rapport d'implémentation - <IDXXX>
+
+## Tâche
+
+- **ID** : id010
+- **Titre** : Implémenter l'écran d'accueil
+- **Date** : 2026-03-03
+
+## Fichiers créés
+
+| Fichier                                             | Description                     |
+| --------------------------------------------------- | ------------------------------- |
+| `app/src/main/java/ui/screens/AccueilScreen.kt`     | Composable de l'écran d'accueil |
+| `app/src/test/java/ui/screens/AccueilScreenTest.kt` | Tests unitaires                 |
+
+## Fichiers modifiés
+
+| Fichier                                    | Modification              |
+| ------------------------------------------ | ------------------------- |
+| `app/src/main/java/navigation/NavGraph.kt` | Ajout de la route accueil |
+
+## Résultats des tests
+
+| Commande          | Résultat           |
+| ----------------- | ------------------ |
+| `./gradlew build` | ✓ BUILD SUCCESSFUL |
+| `./gradlew test`  | ✓ 5 tests passed   |
+| `./gradlew lint`  | ✓ No issues        |
+
+## Notes
+
+- Observations, difficultés rencontrées, décisions prises...
+```
 
 ### Types de tests requis
 
@@ -126,6 +168,7 @@ Procède en **6 étapes** :
 | **Les tests unitaires passent** (`./gradlew test`)        | ✓          |
 | **Aucune erreur de lint** (`./gradlew lint`)              | ✓          |
 | La tâche est cochée dans `/ROADMAP.md`                    | ✓          |
+| **Rapport généré** `/<IDXXX>_IMPLEMENTATION.md`           | ✓          |
 | Aucun commit n'a été effectué                             | ✓          |
 
 > ⚠️ **IMPORTANT** : Ne JAMAIS cocher une tâche si les tests échouent. Corriger d'abord les erreurs.
@@ -147,5 +190,6 @@ Utilisateur : "Fais la tâche id010"
    - ./gradlew test → Tests passed: 5 ✓
    - ./gradlew lint → No issues found ✓
 7. Mise à jour : [ ] → [x] pour id010
-8. Terminé (sans commit)
+8. Génération du rapport /id010_IMPLEMENTATION.md
+9. Terminé (sans commit)
 ```

@@ -5,11 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.huybrancardage.ui.screens.DesignSystemScreen
+import com.example.huybrancardage.ui.screens.AccueilScreen
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,8 +19,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             HuyBrancardageTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
-                    DesignSystemScreen(modifier = Modifier.fillMaxSize())
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    AccueilScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
@@ -30,6 +31,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     HuyBrancardageTheme {
-        DesignSystemScreen()
+        AccueilScreen()
     }
 }

@@ -6,10 +6,11 @@ import androidx.compose.ui.graphics.Color
 // Thème bleu principal
 
 // Bleus
-val Blue600 = Color(0xFF2563EB)
-val Blue700 = Color(0xFF1D4ED8)
 val Blue50 = Color(0xFFF0F9FF)
 val Blue100 = Color(0xFFE0F2FE)
+val Blue300 = Color(0xFF93C5FD)
+val Blue600 = Color(0xFF2563EB)
+val Blue700 = Color(0xFF1D4ED8)
 
 // Gris
 val Gray50 = Color(0xFFFAFAFA)
