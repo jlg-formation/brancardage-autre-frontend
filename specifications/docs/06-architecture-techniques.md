@@ -32,7 +32,7 @@ L'application Android est développée en Kotlin et suit les recommandations d'a
 - **UI :** Jetpack Compose.
 - **Asynchronisme & Réactivité :** Coroutines et Kotlin Flow.
 - **Réseau :** Retrofit (avec OkHttp et un convertisseur JSON comme Moshi ou Kotlinx Serialization).
-- **Injection de Dépendances :** Hilt (recommandé) ou Koin.
+
 
 ### 2.3. Intégrations Matérielles
 
