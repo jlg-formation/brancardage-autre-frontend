@@ -2,6 +2,7 @@ package com.example.huybrancardage.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,6 +15,7 @@ import com.example.huybrancardage.ui.screens.MediasScreen
 import com.example.huybrancardage.ui.screens.RecapitulatifScreen
 import com.example.huybrancardage.ui.screens.RechercheManuelleScreen
 import com.example.huybrancardage.ui.screens.ScanBraceletScreen
+import com.example.huybrancardage.ui.viewmodel.PatientViewModel
 
 /**
  * NavGraph principal de l'application
@@ -30,6 +32,9 @@ fun BrancardageNavGraph(
     modifier: Modifier = Modifier,
     startDestination: String = Route.Accueil.route
 ) {
+    // ViewModel partagé pour le patient sélectionné
+    val patientViewModel: PatientViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
@@ -53,8 +58,10 @@ fun BrancardageNavGraph(
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onSearchClick = {
-                    // Après recherche, naviguer vers le dossier patient
+                onPatientSelected = { patient ->
+                    // Stocker le patient sélectionné dans le ViewModel partagé
+                    patientViewModel.setPatient(patient)
+                    // Naviguer vers le dossier patient
                     navController.navigate(Route.DossierPatient.route)
                 }
             )
@@ -65,8 +72,10 @@ fun BrancardageNavGraph(
                 onBackClick = {
                     navController.popBackStack()
                 },
-                onScanSuccess = {
-                    // Après scan réussi, naviguer vers le dossier patient
+                onScanSuccess = { patient ->
+                    // Stocker le patient scanné dans le ViewModel partagé
+                    patientViewModel.setPatient(patient)
+                    // Naviguer vers le dossier patient
                     navController.navigate(Route.DossierPatient.route)
                 }
             )
@@ -75,6 +84,7 @@ fun BrancardageNavGraph(
         // ==================== DOSSIER PATIENT ====================
         composable(Route.DossierPatient.route) {
             DossierPatientScreen(
+                patientViewModel = patientViewModel,
                 onBackClick = {
                     navController.popBackStack()
                 },

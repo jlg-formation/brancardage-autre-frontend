@@ -41,7 +41,7 @@
 
 ### Étape 3 : Logique métier & ViewModels
 
-- [ ] **id004** - Ajouter les ViewModels et gestion d'état (State Management)
+- [x] **id004** - Ajouter les ViewModels et gestion d'état (State Management)
   - **Dépendances** : id003
   - **Docs** : [06-architecture-techniques.md](specifications/docs/06-architecture-techniques.md), [04-specifications-fonctionnelles.md](specifications/docs/04-specifications-fonctionnelles.md)
   - **Livrable** : 
@@ -51,7 +51,7 @@
 
 ### Étape 4 : Intégration API & Recherche de patient
 
-- [ ] **id005** - Créer couche réseau (Retrofit + Repository) et connecter recherche manuelle
+- [x] **id005** - Créer couche réseau (Retrofit + Repository) et connecter recherche manuelle
   - **Dépendances** : id004
   - **Docs** : [06-architecture-techniques.md](specifications/docs/06-architecture-techniques.md), [swagger/api.yml](specifications/swagger/api.yml)
   - **Livrable** :
@@ -63,7 +63,7 @@
 
 ### Étape 5 : Caméra & Scan de Code-barres/QR Code
 
-- [ ] **id006** - Intégrer CameraX et ML Kit pour le scan de bracelet
+- [x] **id006** - Intégrer CameraX et ML Kit pour le scan de bracelet
   - **Dépendances** : id005
   - **Docs** : [06-architecture-techniques.md](specifications/docs/06-architecture-techniques.md), [04-specifications-fonctionnelles.md](specifications/docs/04-specifications-fonctionnelles.md)
   - **Livrable** :
@@ -135,7 +135,7 @@
 
 ## État du Projet
 
-**Phase actuelle :** Étape 3 - Logique métier & ViewModels
+**Phase actuelle :** Étape 5 - Caméra & Scan de Code-barres/QR Code
 
 **État du code :**
 - ✅ Projet Android compilable
@@ -143,11 +143,15 @@
 - ✅ Design System implémenté (thème, couleurs, typographies, composants)
 - ✅ 9 écrans métier implémentés (données mockées)
 - ✅ Navigation Compose configurée (parcours complet navigable)
-- ❌ ViewModels non créés
-- ❌ API non connectée
+- ✅ ViewModels créés (SearchViewModel, PatientViewModel, MediaViewModel, LocationViewModel, DestinationViewModel, ScanViewModel, BrancardageViewModel)
+- ✅ Modèles de données (Patient, Media, Localisation, Destination, BrancardageRequest)
+- ✅ Gestion d'état partagée (BrancardageSessionState)
+- ✅ Couche réseau (Retrofit + OkHttp + Kotlinx Serialization)
+- ✅ Repositories (PatientRepository, DestinationRepository) avec données mockées
+- ✅ ViewModels connectés aux Repositories
 
 **Prochaines étapes prioritaires :**
-1. Implémenter id004 : Ajouter les ViewModels et gestion d'état
-2. Implémenter id002 : Les 9 écrans en statique
-3. Implémenter id003 : Navigation entre les écrans
+1. Implémenter id006 : Intégrer CameraX et ML Kit pour le scan de bracelet
+2. Implémenter id007 : Gestion des médias (appareil photo + galerie)
+3. Implémenter id008 : Intégrer Play Services Location pour le GPS
 

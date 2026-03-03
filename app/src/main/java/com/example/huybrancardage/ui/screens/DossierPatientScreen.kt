@@ -24,12 +24,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.huybrancardage.domain.model.Patient
 import com.example.huybrancardage.ui.theme.Blue100
 import com.example.huybrancardage.ui.theme.Blue600
 import com.example.huybrancardage.ui.theme.BrancardageTopAppBar
@@ -39,6 +43,7 @@ import com.example.huybrancardage.ui.theme.Gray500
 import com.example.huybrancardage.ui.theme.Gray900
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 import com.example.huybrancardage.ui.theme.White
+import com.example.huybrancardage.ui.viewmodel.PatientViewModel
 
 /**
  * Écran de dossier patient
@@ -47,11 +52,14 @@ import com.example.huybrancardage.ui.theme.White
 @Composable
 fun DossierPatientScreen(
     modifier: Modifier = Modifier,
+    patientViewModel: PatientViewModel = viewModel(),
     onBackClick: () -> Unit = {},
     onCreateRequestClick: () -> Unit = {}
 ) {
-    // Données mockées du patient
-    val patient = MockPatient(
+    val uiState by patientViewModel.uiState.collectAsState()
+
+    // Utiliser le patient du ViewModel ou des données mockées
+    val patient = uiState.patient?.toMockPatient() ?: MockPatient(
         nom = "Jean Dupont",
         initiales = "JD",
         genre = "Homme",
@@ -266,6 +274,35 @@ private data class PatientAlerte(
     val titre: String,
     val description: String
 )
+
+/**
+ * Convertit un Patient du domaine en MockPatient pour l'affichage
+ */
+private fun Patient.toMockPatient(): MockPatient {
+    val genreText = when (sexe.name) {
+        "MASCULIN" -> "Homme"
+        "FEMININ" -> "Femme"
+        else -> sexe.libelle
+    }
+
+    val dateFormatee = "${dateNaissance.dayOfMonth.toString().padStart(2, '0')}/${dateNaissance.monthValue.toString().padStart(2, '0')}/${dateNaissance.year}"
+
+    return MockPatient(
+        nom = nomComplet,
+        initiales = initiales,
+        genre = genreText,
+        age = age,
+        ipp = ipp,
+        dateNaissance = dateFormatee,
+        chambre = localisationFormattee,
+        alertes = alertesMedicales.map { alerte ->
+            PatientAlerte(
+                titre = alerte.titre,
+                description = alerte.description ?: ""
+            )
+        }
+    )
+}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
