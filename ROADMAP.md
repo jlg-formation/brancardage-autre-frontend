@@ -85,7 +85,7 @@
 
 ### Étape 7 : Géolocalisation (GPS)
 
-- [ ] **id008** - Intégrer Play Services Location pour le GPS
+- [x] **id008** - Intégrer Play Services Location pour le GPS
   - **Dépendances** : id007
   - **Docs** : [06-architecture-techniques.md](specifications/docs/06-architecture-techniques.md), [04-specifications-fonctionnelles.md](specifications/docs/04-specifications-fonctionnelles.md)
   - **Livrable** :
@@ -93,7 +93,7 @@
     - LocationViewModel avec Fused Location Provider
     - Permissions runtime pour ACCESS_FINE_LOCATION
     - Écran 06-Localisation : affiche position détectée, permet modification manuelle
-    - Récupère destinations depuis API
+    - Timeout GPS de 10 secondes avec fallback vers position par défaut
 
 ### Étape 8 : Validation & Envoi de la demande
 
@@ -135,7 +135,7 @@
 
 ## État du Projet
 
-**Phase actuelle :** Étape 6 - Galerie photo & Prise de photo (Terminée)
+**Phase actuelle :** Étape 7 - Géolocalisation GPS (Terminée)
 
 **État du code :**
 - ✅ Projet Android compilable
@@ -150,10 +150,11 @@
 - ✅ Repositories (PatientRepository, DestinationRepository) avec données mockées
 - ✅ CameraX + ML Kit pour scan de code-barres/QR Code
 - ✅ Gestion des médias (caméra, galerie, compression d'images)
+- ✅ Play Services Location pour GPS avec timeout de 10s
 - ✅ ViewModels connectés aux Repositories
 
 **Prochaines étapes prioritaires :**
-1. Implémenter id006 : Intégrer CameraX et ML Kit pour le scan de bracelet
-2. Implémenter id007 : Gestion des médias (appareil photo + galerie)
-3. Implémenter id008 : Intégrer Play Services Location pour le GPS
+1. Implémenter id009 : Récapitulatif, validation et POST de brancardage
+2. Implémenter id010 : Tests unitaires & tests d'intégration
+3. Implémenter id011 : CI/CD & Polish final
 

@@ -1,6 +1,7 @@
 package com.example.huybrancardage.data.location
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
@@ -54,6 +55,7 @@ class LocationService(private val context: Context) {
      * @return La dernière position connue ou null si non disponible
      * @throws SecurityException si les permissions ne sont pas accordées
      */
+    @SuppressLint("MissingPermission")
     suspend fun getLastKnownLocation(): Location? {
         if (!hasLocationPermission()) {
             throw SecurityException("Permission de localisation non accordée")
@@ -82,6 +84,7 @@ class LocationService(private val context: Context) {
      * @throws LocationTimeoutException si le timeout est atteint
      * @throws Exception si la récupération échoue
      */
+    @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(timeoutMillis: Long = LOCATION_TIMEOUT_MS): Location {
         if (!hasLocationPermission()) {
             throw SecurityException("Permission de localisation non accordée")
@@ -136,6 +139,7 @@ class LocationService(private val context: Context) {
      * @param intervalMillis Intervalle entre les mises à jour en millisecondes
      * @return Flow émettant les nouvelles positions
      */
+    @SuppressLint("MissingPermission")
     fun observeLocationUpdates(intervalMillis: Long = 5000L): Flow<Location> = callbackFlow {
         if (!hasLocationPermission()) {
             close(SecurityException("Permission de localisation non accordée"))
