@@ -15,6 +15,7 @@ import com.example.huybrancardage.ui.screens.MediasScreen
 import com.example.huybrancardage.ui.screens.RecapitulatifScreen
 import com.example.huybrancardage.ui.screens.RechercheManuelleScreen
 import com.example.huybrancardage.ui.screens.ScanBraceletScreen
+import com.example.huybrancardage.ui.viewmodel.LocationViewModel
 import com.example.huybrancardage.ui.viewmodel.MediaViewModel
 import com.example.huybrancardage.ui.viewmodel.PatientViewModel
 
@@ -38,6 +39,9 @@ fun BrancardageNavGraph(
 
     // ViewModel partagé pour les médias
     val mediaViewModel: MediaViewModel = viewModel()
+
+    // ViewModel partagé pour la localisation GPS
+    val locationViewModel: LocationViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -118,6 +122,7 @@ fun BrancardageNavGraph(
 
         composable(Route.Localisation.route) {
             LocalisationScreen(
+                viewModel = locationViewModel,
                 onBackClick = {
                     navController.popBackStack()
                 },

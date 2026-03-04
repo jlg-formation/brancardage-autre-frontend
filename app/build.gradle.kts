@@ -76,6 +76,9 @@ dependencies {
     // ExifInterface for image orientation
     implementation(libs.androidx.exifinterface)
 
+    // Play Services Location for GPS
+    implementation(libs.play.services.location)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)

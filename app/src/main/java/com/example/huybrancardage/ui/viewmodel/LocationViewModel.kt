@@ -1,9 +1,12 @@
 package com.example.huybrancardage.ui.viewmodel
 
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.huybrancardage.data.location.LocationService
+import com.example.huybrancardage.data.location.LocationTimeoutException
+import com.example.huybrancardage.data.location.LocationToHospitalMapper
 import com.example.huybrancardage.domain.model.Localisation
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,8 @@ data class LocationUiState(
     val precisions: String = "",
     val isLoading: Boolean = false,
     val isGpsEnabled: Boolean = true,
+    val hasPermission: Boolean = false,
+    val permissionRequested: Boolean = false,
     val error: String? = null
 ) {
     /**
@@ -29,41 +34,163 @@ data class LocationUiState(
 
 /**
  * ViewModel pour l'écran de localisation GPS
+ *
+ * Utilise Fused Location Provider pour obtenir la position GPS réelle
  */
 class LocationViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(LocationUiState())
     val uiState: StateFlow<LocationUiState> = _uiState.asStateFlow()
 
-    init {
-        // Charger automatiquement la localisation GPS mockée
-        loadCurrentLocation()
+    private var locationService: LocationService? = null
+
+    /**
+     * Initialise le LocationService avec le contexte
+     * Doit être appelé depuis l'écran avec le contexte Android
+     */
+    fun initLocationService(service: LocationService) {
+        this.locationService = service
+        checkPermissionAndLoadLocation()
+    }
+
+    /**
+     * Vérifie les permissions et charge la position si autorisé
+     */
+    private fun checkPermissionAndLoadLocation() {
+        val service = locationService ?: return
+
+        val hasPermission = service.hasLocationPermission()
+        _uiState.update { it.copy(hasPermission = hasPermission) }
+
+        if (hasPermission) {
+            loadCurrentLocation()
+        }
+    }
+
+    /**
+     * Met à jour l'état après que la permission a été accordée ou refusée
+     */
+    fun onPermissionResult(granted: Boolean) {
+        _uiState.update {
+            it.copy(
+                hasPermission = granted,
+                permissionRequested = true
+            )
+        }
+
+        if (granted) {
+            loadCurrentLocation()
+        } else {
+            // Charger une localisation par défaut si permission refusée
+            _uiState.update {
+                it.copy(
+                    localisation = LocationToHospitalMapper.getDefaultLocalisation(),
+                    error = "Permission refusée. Position par défaut utilisée."
+                )
+            }
+        }
     }
 
     /**
      * Charge la position GPS actuelle
      */
     fun loadCurrentLocation() {
+        val service = locationService
+
+        if (service == null) {
+            // Pas de service, utiliser mock
+            loadMockedLocation()
+            return
+        }
+
+        if (!service.hasLocationPermission()) {
+            _uiState.update {
+                it.copy(
+                    hasPermission = false,
+                    error = "Permission de localisation requise"
+                )
+            }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             try {
-                // Simulation de la récupération GPS (sera remplacé dans id008)
-                delay(1000)
-                val mockLocation = getMockedLocation()
-                _uiState.update {
-                    it.copy(
-                        localisation = mockLocation,
-                        isLoading = false
-                    )
+                // Essayer d'abord la dernière position connue (rapide)
+                val lastLocation = service.getLastKnownLocation()
+
+                if (lastLocation != null) {
+                    updateLocationFromGps(lastLocation)
+                } else {
+                    // Si pas de position en cache, demander une nouvelle position
+                    val currentLocation = service.getCurrentLocation()
+                    updateLocationFromGps(currentLocation)
                 }
-            } catch (e: Exception) {
+            } catch (e: SecurityException) {
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = "Impossible d'obtenir la position GPS: ${e.message}"
+                        hasPermission = false,
+                        error = "Permission de localisation non accordée"
                     )
                 }
+            } catch (e: LocationTimeoutException) {
+                // Timeout GPS - utiliser une position par défaut
+                _uiState.update {
+                    it.copy(
+                        localisation = LocationToHospitalMapper.getDefaultLocalisation(),
+                        isLoading = false,
+                        error = "Position GPS non trouvée (timeout). Position par défaut utilisée."
+                    )
+                }
+            } catch (e: Exception) {
+                // En cas d'erreur, utiliser une position par défaut
+                _uiState.update {
+                    it.copy(
+                        localisation = LocationToHospitalMapper.getDefaultLocalisation(),
+                        isLoading = false,
+                        error = "GPS indisponible: ${e.message}. Position par défaut utilisée."
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Met à jour l'état avec une position GPS
+     */
+    private fun updateLocationFromGps(location: Location) {
+        val localisation = LocationToHospitalMapper.mapToLocalisation(
+            latitude = location.latitude,
+            longitude = location.longitude
+        )
+
+        _uiState.update {
+            it.copy(
+                localisation = localisation,
+                isLoading = false,
+                isGpsEnabled = true,
+                error = null
+            )
+        }
+    }
+
+    /**
+     * Charge une position mockée (pour les previews ou tests)
+     */
+    private fun loadMockedLocation() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            // Simulation d'un délai
+            kotlinx.coroutines.delay(500)
+
+            _uiState.update {
+                it.copy(
+                    localisation = LocationToHospitalMapper.getDefaultLocalisation(),
+                    isLoading = false
+                )
             }
         }
     }
@@ -134,6 +261,13 @@ class LocationViewModel : ViewModel() {
     }
 
     /**
+     * Efface l'erreur
+     */
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    /**
      * Réinitialise l'état
      */
     fun clear() {
@@ -147,20 +281,4 @@ class LocationViewModel : ViewModel() {
         val state = _uiState.value
         return state.localisation?.copy(precisions = state.precisions)
     }
-
-    /**
-     * Localisation mockée basée sur le patient par défaut
-     * TODO: Remplacer par la vraie position GPS dans id008
-     */
-    private fun getMockedLocation(): Localisation {
-        return Localisation(
-            latitude = 48.8566,
-            longitude = 2.3522,
-            description = "Bâtiment A - Cardiologie",
-            batiment = "A",
-            etage = 2,
-            chambre = "204"
-        )
-    }
 }
-
