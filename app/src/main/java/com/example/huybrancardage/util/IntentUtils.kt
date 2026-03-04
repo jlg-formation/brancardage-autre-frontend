@@ -14,7 +14,7 @@ object IntentUtils {
     /**
      * Numéro du standard de brancardage de l'hôpital
      */
-    const val BRANCARDAGE_PHONE_NUMBER = "tel:+33123456789"
+    const val BRANCARDAGE_PHONE_NUMBER = "tel:+32111222333"
 
     /**
      * Ouvre le composeur téléphonique avec le numéro de brancardage
