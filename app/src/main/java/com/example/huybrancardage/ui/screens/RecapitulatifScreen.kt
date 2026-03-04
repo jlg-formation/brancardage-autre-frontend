@@ -2,6 +2,7 @@ package com.example.huybrancardage.ui.screens
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -60,6 +63,7 @@ import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 import com.example.huybrancardage.ui.theme.White
 import com.example.huybrancardage.ui.viewmodel.BrancardageViewModel
 import com.example.huybrancardage.ui.viewmodel.SubmissionState
+import com.example.huybrancardage.util.IntentUtils
 
 /**
  * Écran récapitulatif avant validation
@@ -192,6 +196,30 @@ fun RecapitulatifScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Boutons d'action secondaires (Appeler et Partager)
+                ActionButtonsRow(
+                    onCallClick = {
+                        IntentUtils.dialBrancardageService(context)
+                    },
+                    onShareClick = {
+                        val patientName = patient?.nomComplet ?: "Patient inconnu"
+                        val patientIpp = patient?.ipp ?: "N/A"
+                        val departText = localisation?.descriptionFormattee ?: "Non défini"
+                        val destinationText = destination?.let { "${it.nom} (${it.localisationFormattee})" } ?: "Non défini"
+
+                        IntentUtils.shareBrancardageRequest(
+                            context = context,
+                            patientName = patientName,
+                            patientIpp = patientIpp,
+                            depart = departText,
+                            destination = destinationText,
+                            mediaCount = medias.size
+                        )
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Bouton valider
                 ValidateButton(
@@ -483,6 +511,76 @@ private fun ValidateButton(
 // Extension pour letter spacing
 private val Int.sp: androidx.compose.ui.unit.TextUnit
     get() = androidx.compose.ui.unit.TextUnit(this.toFloat(), androidx.compose.ui.unit.TextUnitType.Sp)
+
+/**
+ * Boutons d'action secondaires : Appeler le service et Partager
+ */
+@Composable
+private fun ActionButtonsRow(
+    onCallClick: () -> Unit,
+    onShareClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Bouton Appeler
+        ActionSecondaryButton(
+            text = "Appeler",
+            icon = Icons.Default.Phone,
+            onClick = onCallClick,
+            modifier = Modifier.weight(1f)
+        )
+
+        // Bouton Partager
+        ActionSecondaryButton(
+            text = "Partager",
+            icon = Icons.Default.Share,
+            onClick = onShareClick,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+/**
+ * Bouton d'action secondaire avec icône
+ */
+@Composable
+private fun ActionSecondaryButton(
+    text: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .border(
+                width = 1.dp,
+                color = Blue600,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .background(White)
+            .clickable { onClick() }
+            .padding(vertical = 12.dp, horizontal = 16.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = Blue600,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = Blue600
+        )
+    }
+}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
