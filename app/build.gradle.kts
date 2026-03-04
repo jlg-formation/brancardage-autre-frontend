@@ -70,6 +70,12 @@ dependencies {
     // ML Kit Barcode Scanning
     implementation(libs.mlkit.barcode.scanning)
 
+    // Coil Image Loading
+    implementation(libs.coil.compose)
+
+    // ExifInterface for image orientation
+    implementation(libs.androidx.exifinterface)
+
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)

@@ -74,7 +74,7 @@
 
 ### Étape 6 : Galerie photo & Prise de photo
 
-- [ ] **id007** - Implémenter gestion des médias (appareil photo + galerie)
+- [x] **id007** - Implémenter gestion des médias (appareil photo + galerie)
   - **Dépendances** : id006
   - **Docs** : [06-architecture-techniques.md](specifications/docs/06-architecture-techniques.md), [04-specifications-fonctionnelles.md](specifications/docs/04-specifications-fonctionnelles.md)
   - **Livrable** :
@@ -135,7 +135,7 @@
 
 ## État du Projet
 
-**Phase actuelle :** Étape 5 - Caméra & Scan de Code-barres/QR Code
+**Phase actuelle :** Étape 6 - Galerie photo & Prise de photo (Terminée)
 
 **État du code :**
 - ✅ Projet Android compilable
@@ -148,6 +148,8 @@
 - ✅ Gestion d'état partagée (BrancardageSessionState)
 - ✅ Couche réseau (Retrofit + OkHttp + Kotlinx Serialization)
 - ✅ Repositories (PatientRepository, DestinationRepository) avec données mockées
+- ✅ CameraX + ML Kit pour scan de code-barres/QR Code
+- ✅ Gestion des médias (caméra, galerie, compression d'images)
 - ✅ ViewModels connectés aux Repositories
 
 **Prochaines étapes prioritaires :**

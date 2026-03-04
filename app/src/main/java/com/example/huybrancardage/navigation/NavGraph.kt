@@ -15,6 +15,7 @@ import com.example.huybrancardage.ui.screens.MediasScreen
 import com.example.huybrancardage.ui.screens.RecapitulatifScreen
 import com.example.huybrancardage.ui.screens.RechercheManuelleScreen
 import com.example.huybrancardage.ui.screens.ScanBraceletScreen
+import com.example.huybrancardage.ui.viewmodel.MediaViewModel
 import com.example.huybrancardage.ui.viewmodel.PatientViewModel
 
 /**
@@ -34,6 +35,9 @@ fun BrancardageNavGraph(
 ) {
     // ViewModel partagé pour le patient sélectionné
     val patientViewModel: PatientViewModel = viewModel()
+
+    // ViewModel partagé pour les médias
+    val mediaViewModel: MediaViewModel = viewModel()
 
     NavHost(
         navController = navController,
@@ -98,6 +102,7 @@ fun BrancardageNavGraph(
         // ==================== CRÉATION DE DEMANDE ====================
         composable(Route.Medias.route) {
             MediasScreen(
+                viewModel = mediaViewModel,
                 onBackClick = {
                     navController.popBackStack()
                 },
@@ -107,12 +112,6 @@ fun BrancardageNavGraph(
                 },
                 onContinueClick = {
                     navController.navigate(Route.Localisation.route)
-                },
-                onTakePhotoClick = {
-                    // TODO: Implémenter la prise de photo (id007)
-                },
-                onScanDocumentClick = {
-                    // TODO: Implémenter le scan de document (id007)
                 }
             )
         }
