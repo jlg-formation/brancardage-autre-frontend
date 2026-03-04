@@ -21,9 +21,22 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // URL du backend - paramétrable via gradle.properties ou ligne de commande
+        // Exemple: ./gradlew assembleRelease -PBACKEND_URL="https://api.production.com/api/v1/"
+        val backendUrl = project.findProperty("BACKEND_URL")?.toString()
+            ?: "http://localhost:8080/api/v1/"
+        buildConfigField("String", "BACKEND_URL", "\"$backendUrl\"")
     }
 
     buildTypes {
+        debug {
+            // URL pour le développement local (émulateur: 10.0.2.2, USB: localhost avec adb reverse)
+            val debugUrl = project.findProperty("DEBUG_BACKEND_URL")?.toString()
+                ?: project.findProperty("BACKEND_URL")?.toString()
+                ?: "http://10.0.2.2:8080/api/v1/"
+            buildConfigField("String", "BACKEND_URL", "\"$debugUrl\"")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -31,6 +44,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // URL pour la production - DOIT être définie via gradle.properties ou ligne de commande
+            val releaseUrl = project.findProperty("RELEASE_BACKEND_URL")?.toString()
+                ?: project.findProperty("BACKEND_URL")?.toString()
+                ?: "https://api.example.com/api/v1/"
+            buildConfigField("String", "BACKEND_URL", "\"$releaseUrl\"")
         }
     }
     compileOptions {
@@ -39,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     lint {
         abortOnError = false

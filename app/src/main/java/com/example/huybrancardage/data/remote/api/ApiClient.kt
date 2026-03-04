@@ -1,5 +1,6 @@
 package com.example.huybrancardage.data.remote.api
 
+import com.example.huybrancardage.BuildConfig
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -14,11 +15,12 @@ import java.util.concurrent.TimeUnit
 object ApiClient {
 
     /**
-     * URL de base de l'API
-     * - localhost:8080 fonctionne avec `adb reverse tcp:8080 tcp:8080` (téléphone USB)
-     * - 10.0.2.2:8080 pour l'émulateur Android
+     * URL de base de l'API - configurée via build.gradle.kts
+     * Peut être paramétrée au moment de la build:
+     * - ./gradlew assembleDebug -PDEBUG_BACKEND_URL="http://10.0.2.2:8080/api/v1/"
+     * - ./gradlew assembleRelease -PRELEASE_BACKEND_URL="https://api.production.com/api/v1/"
      */
-    private const val BASE_URL = "http://localhost:8080/api/v1/"
+    private val BASE_URL: String = BuildConfig.BACKEND_URL
 
     /**
      * Configuration JSON pour la sérialisation
