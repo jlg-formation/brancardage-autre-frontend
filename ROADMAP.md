@@ -109,7 +109,7 @@
 
 ### Étape 9 : Tests unitaires & tests d'intégration
 
-- [ ] **id010** - Ajouter tests (ViewModels, Repository, Use Cases)
+- [x] **id010** - Ajouter tests (ViewModels, Repository, Use Cases)
   - **Dépendances** : id009
   - **Docs** : [08-tests-unitaire-et-e2e.md](specifications/docs/08-tests-unitaire-et-e2e.md), [07-code-guidelines.md](specifications/docs/07-code-guidelines.md)
   - **Livrable** :
@@ -135,7 +135,7 @@
 
 ## État du Projet
 
-**Phase actuelle :** Étape 8 - Validation & Envoi de la demande (Terminée)
+**Phase actuelle :** Étape 9 - Tests unitaires & tests d'intégration (Terminée)
 
 **État du code :**
 - ✅ Projet Android compilable
@@ -156,8 +156,9 @@
 - ✅ Validation et POST de brancardage (avec données mockées)
 - ✅ Écran Confirmation avec numéro de suivi dynamique
 - ✅ Gestion des erreurs réseau
+- ✅ Tests unitaires (163 tests) pour ViewModels, Repositories et modèles de domaine
+- ✅ Tests E2E avec Compose Testing Library
 
 **Prochaines étapes prioritaires :**
-1. Implémenter id010 : Tests unitaires & tests d'intégration
-2. Implémenter id011 : CI/CD & Polish final
+1. Implémenter id011 : CI/CD & Polish final
 
