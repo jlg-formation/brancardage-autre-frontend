@@ -1,10 +1,19 @@
 package com.example.huybrancardage.data.remote.api
 
+import com.example.huybrancardage.data.remote.dto.BrancardageRequestDto
+import com.example.huybrancardage.data.remote.dto.BrancardageResponseDto
 import com.example.huybrancardage.data.remote.dto.DestinationDto
+import com.example.huybrancardage.data.remote.dto.MediaUploadResponseDto
 import com.example.huybrancardage.data.remote.dto.PatientDto
 import com.example.huybrancardage.data.remote.dto.PatientSearchResponseDto
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -58,5 +67,28 @@ interface BrancardageApiService {
     suspend fun getDestinationById(
         @Path("id") id: String
     ): Response<DestinationDto>
+
+    // ==================== BRANCARDAGE ====================
+
+    /**
+     * Crée une nouvelle demande de brancardage
+     */
+    @POST("brancardages")
+    suspend fun createBrancardage(
+        @Body request: BrancardageRequestDto
+    ): Response<BrancardageResponseDto>
+
+    // ==================== MEDIAS ====================
+
+    /**
+     * Upload un fichier média (photo ou document)
+     */
+    @Multipart
+    @POST("medias")
+    suspend fun uploadMedia(
+        @Part file: MultipartBody.Part,
+        @Part("type") type: RequestBody,
+        @Part("description") description: RequestBody?
+    ): Response<MediaUploadResponseDto>
 }
 

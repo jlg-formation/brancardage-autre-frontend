@@ -97,7 +97,7 @@
 
 ### Étape 8 : Validation & Envoi de la demande
 
-- [ ] **id009** - Implémenter récapitulatif, validation et POST de brancardage
+- [x] **id009** - Implémenter récapitulatif, validation et POST de brancardage
   - **Dépendances** : id008
   - **Docs** : [06-architecture-techniques.md](specifications/docs/06-architecture-techniques.md), [swagger/api.yml](specifications/swagger/api.yml)
   - **Livrable** :
@@ -135,7 +135,7 @@
 
 ## État du Projet
 
-**Phase actuelle :** Étape 7 - Géolocalisation GPS (Terminée)
+**Phase actuelle :** Étape 8 - Validation & Envoi de la demande (Terminée)
 
 **État du code :**
 - ✅ Projet Android compilable
@@ -147,14 +147,17 @@
 - ✅ Modèles de données (Patient, Media, Localisation, Destination, BrancardageRequest)
 - ✅ Gestion d'état partagée (BrancardageSessionState)
 - ✅ Couche réseau (Retrofit + OkHttp + Kotlinx Serialization)
-- ✅ Repositories (PatientRepository, DestinationRepository) avec données mockées
+- ✅ Repositories (PatientRepository, DestinationRepository, BrancardageRepository) avec données mockées
 - ✅ CameraX + ML Kit pour scan de code-barres/QR Code
 - ✅ Gestion des médias (caméra, galerie, compression d'images)
 - ✅ Play Services Location pour GPS avec timeout de 10s
 - ✅ ViewModels connectés aux Repositories
+- ✅ Écran Récapitulatif connecté aux données de session
+- ✅ Validation et POST de brancardage (avec données mockées)
+- ✅ Écran Confirmation avec numéro de suivi dynamique
+- ✅ Gestion des erreurs réseau
 
 **Prochaines étapes prioritaires :**
-1. Implémenter id009 : Récapitulatif, validation et POST de brancardage
-2. Implémenter id010 : Tests unitaires & tests d'intégration
-3. Implémenter id011 : CI/CD & Polish final
+1. Implémenter id010 : Tests unitaires & tests d'intégration
+2. Implémenter id011 : CI/CD & Polish final
 

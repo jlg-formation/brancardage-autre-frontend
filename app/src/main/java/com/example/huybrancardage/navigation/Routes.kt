@@ -1,5 +1,9 @@
 package com.example.huybrancardage.navigation
 
+import java.net.URLDecoder
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+
 /**
  * Définition des routes de navigation de l'application
  * Utilise un sealed class pour typer fortement les routes
@@ -21,6 +25,21 @@ sealed class Route(val route: String) {
     data object Localisation : Route("localisation")
     data object Destination : Route("destination")
     data object Recapitulatif : Route("recapitulatif")
-    data object Confirmation : Route("confirmation")
-}
 
+    // Confirmation avec paramètres
+    data object Confirmation : Route("confirmation/{trackingNumber}/{patientName}") {
+        fun createRoute(trackingNumber: String, patientName: String): String {
+            val encodedTracking = URLEncoder.encode(trackingNumber, StandardCharsets.UTF_8.toString())
+            val encodedName = URLEncoder.encode(patientName, StandardCharsets.UTF_8.toString())
+            return "confirmation/$encodedTracking/$encodedName"
+        }
+
+        fun decodeTrackingNumber(encoded: String): String {
+            return URLDecoder.decode(encoded, StandardCharsets.UTF_8.toString())
+        }
+
+        fun decodePatientName(encoded: String): String {
+            return URLDecoder.decode(encoded, StandardCharsets.UTF_8.toString())
+        }
+    }
+}

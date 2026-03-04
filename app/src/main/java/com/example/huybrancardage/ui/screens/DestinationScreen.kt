@@ -21,25 +21,24 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.huybrancardage.domain.model.Destination
 import com.example.huybrancardage.ui.theme.Blue100
 import com.example.huybrancardage.ui.theme.Blue600
 import com.example.huybrancardage.ui.theme.BrancardageTopAppBar
-import com.example.huybrancardage.ui.theme.Gray100
 import com.example.huybrancardage.ui.theme.Gray200
 import com.example.huybrancardage.ui.theme.Gray300
 import com.example.huybrancardage.ui.theme.Gray50
@@ -47,6 +46,7 @@ import com.example.huybrancardage.ui.theme.Gray500
 import com.example.huybrancardage.ui.theme.Gray900
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 import com.example.huybrancardage.ui.theme.White
+import com.example.huybrancardage.ui.viewmodel.DestinationViewModel
 
 /**
  * Écran de sélection de la destination
@@ -55,30 +55,19 @@ import com.example.huybrancardage.ui.theme.White
 @Composable
 fun DestinationScreen(
     modifier: Modifier = Modifier,
+    viewModel: DestinationViewModel? = null,
     onBackClick: () -> Unit = {},
     onConfirmClick: () -> Unit = {}
 ) {
-    // Destinations mockées
-    val destinations = listOf(
-        MockDestination(
-            id = "1",
-            nom = "Radiologie",
-            localisation = "Bâtiment B - RDC"
-        ),
-        MockDestination(
-            id = "2",
-            nom = "Bloc Opératoire",
-            localisation = "Bâtiment A - Étage 1"
-        ),
-        MockDestination(
-            id = "3",
-            nom = "Urgences",
-            localisation = "Bâtiment C - RDC"
-        )
-    )
-
-    var searchQuery by remember { mutableStateOf("") }
-    var selectedDestinationId by remember { mutableStateOf("2") } // Bloc Opératoire par défaut
+    // Collecter l'état du ViewModel
+    val uiState by viewModel?.uiState?.collectAsState()
+        ?: androidx.compose.runtime.remember {
+            androidx.compose.runtime.mutableStateOf(
+                com.example.huybrancardage.ui.viewmodel.DestinationUiState(
+                    destinations = getMockDestinations()
+                )
+            )
+        }
 
     Column(
         modifier = modifier
@@ -116,28 +105,44 @@ fun DestinationScreen(
 
             // Barre de recherche
             SearchBar(
-                value = searchQuery,
-                onValueChange = { searchQuery = it }
+                value = uiState.searchQuery,
+                onValueChange = { viewModel?.setSearchQuery(it) }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // Liste des destinations
             Text(
-                text = "Destinations fréquentes",
+                text = if (uiState.searchQuery.isBlank()) "Destinations fréquentes" else "Résultats",
                 style = MaterialTheme.typography.titleSmall,
                 color = Gray900
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            destinations.forEach { destination ->
-                DestinationOption(
-                    destination = destination,
-                    isSelected = selectedDestinationId == destination.id,
-                    onSelect = { selectedDestinationId = destination.id }
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Blue600)
+                }
+            } else if (uiState.displayedDestinations.isEmpty()) {
+                Text(
+                    text = "Aucune destination trouvée",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Gray500,
+                    modifier = Modifier.padding(16.dp)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+            } else {
+                uiState.displayedDestinations.forEach { destination ->
+                    DestinationOption(
+                        destination = destination,
+                        isSelected = uiState.selectedDestination?.id == destination.id,
+                        onSelect = { viewModel?.selectDestination(destination) }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -147,11 +152,41 @@ fun DestinationScreen(
             ConfirmDestinationButton(
                 text = "Confirmer la destination",
                 onClick = onConfirmClick,
-                enabled = selectedDestinationId.isNotEmpty()
+                enabled = uiState.hasSelection
             )
         }
     }
 }
+
+/**
+ * Destinations mockées pour le preview
+ */
+private fun getMockDestinations(): List<Destination> = listOf(
+    Destination(
+        id = "1",
+        nom = "Radiologie",
+        batiment = "B",
+        etage = 0,
+        etageLibelle = "RDC",
+        frequente = true
+    ),
+    Destination(
+        id = "2",
+        nom = "Bloc Opératoire",
+        batiment = "A",
+        etage = 1,
+        etageLibelle = "Étage 1",
+        frequente = true
+    ),
+    Destination(
+        id = "3",
+        nom = "Urgences",
+        batiment = "C",
+        etage = 0,
+        etageLibelle = "RDC",
+        frequente = true
+    )
+)
 
 @Composable
 private fun SearchBar(
@@ -184,13 +219,16 @@ private fun SearchBar(
                 text = "Rechercher un service...",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Gray500,
-                modifier = Modifier.clickable { /* Focus input */ }
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable { /* Focus input */ }
             )
         } else {
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Gray900
+                color = Gray900,
+                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -198,7 +236,7 @@ private fun SearchBar(
 
 @Composable
 private fun DestinationOption(
-    destination: MockDestination,
+    destination: Destination,
     isSelected: Boolean,
     onSelect: () -> Unit
 ) {
@@ -245,7 +283,7 @@ private fun DestinationOption(
                     color = Gray900
                 )
                 Text(
-                    text = destination.localisation,
+                    text = destination.localisationFormattee,
                     style = MaterialTheme.typography.bodySmall,
                     color = Gray500
                 )
@@ -295,13 +333,6 @@ private fun ConfirmDestinationButton(
     }
 }
 
-// Data class pour les destinations mockées
-private data class MockDestination(
-    val id: String,
-    val nom: String,
-    val localisation: String
-)
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun DestinationScreenPreview() {
@@ -309,8 +340,3 @@ fun DestinationScreenPreview() {
         DestinationScreen()
     }
 }
-
-
-
-
-

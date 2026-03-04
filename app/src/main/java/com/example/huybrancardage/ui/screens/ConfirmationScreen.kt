@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -35,6 +36,8 @@ import com.example.huybrancardage.ui.theme.White
 // Couleurs spécifiques à l'écran de confirmation
 private val TealPrimary = Color(0xFF14B8A6)
 private val TealLight = Color(0xFF5EEAD4)
+private val RedPrimary = Color(0xFFDC2626)
+private val RedLight = Color(0xFFFCA5A5)
 
 /**
  * Écran de confirmation de succès
@@ -45,19 +48,25 @@ fun ConfirmationScreen(
     modifier: Modifier = Modifier,
     patientName: String = "Jean Dupont",
     trackingNumber: String = "BRC-2026-084",
+    isSuccess: Boolean = true,
+    errorMessage: String? = null,
     onReturnHomeClick: () -> Unit = {}
 ) {
+    val backgroundColor = if (isSuccess) TealPrimary else RedPrimary
+    val lightColor = if (isSuccess) TealLight else RedLight
+    val iconVector = if (isSuccess) Icons.Default.Check else Icons.Default.Close
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(TealPrimary)
+            .background(backgroundColor)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
-        // Icône de succès animée (cercle blanc avec check)
+        // Icône de succès/erreur
         Box(
             modifier = Modifier
                 .size(96.dp)
@@ -66,9 +75,9 @@ fun ConfirmationScreen(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = "Succès",
-                tint = TealPrimary,
+                imageVector = iconVector,
+                contentDescription = if (isSuccess) "Succès" else "Erreur",
+                tint = backgroundColor,
                 modifier = Modifier.size(48.dp)
             )
         }
@@ -77,7 +86,7 @@ fun ConfirmationScreen(
 
         // Titre
         Text(
-            text = "Demande envoyée !",
+            text = if (isSuccess) "Demande envoyée !" else "Erreur",
             style = MaterialTheme.typography.headlineMedium,
             color = White,
             fontWeight = FontWeight.Bold
@@ -85,18 +94,24 @@ fun ConfirmationScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Message de confirmation
+        // Message de confirmation ou d'erreur
         Text(
-            text = "La demande de brancardage pour $patientName a bien été transmise. Un brancardier va être assigné sous peu.",
+            text = if (isSuccess) {
+                "La demande de brancardage pour $patientName a bien été transmise. Un brancardier va être assigné sous peu."
+            } else {
+                errorMessage ?: "Une erreur s'est produite lors de l'envoi de la demande."
+            },
             style = MaterialTheme.typography.bodyMedium,
-            color = TealLight,
+            color = lightColor,
             textAlign = TextAlign.Center
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Numéro de suivi
-        TrackingNumberCard(trackingNumber = trackingNumber)
+        // Numéro de suivi (seulement en cas de succès)
+        if (isSuccess) {
+            TrackingNumberCard(trackingNumber = trackingNumber)
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -161,3 +176,13 @@ fun ConfirmationScreenPreview() {
     }
 }
 
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ConfirmationScreenErrorPreview() {
+    HuyBrancardageTheme {
+        ConfirmationScreen(
+            isSuccess = false,
+            errorMessage = "Impossible de contacter le serveur"
+        )
+    }
+}
