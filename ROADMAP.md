@@ -121,7 +121,7 @@
 
 ### Étape 10 : CI/CD & Polish final
 
-- [ ] **id011** - Mettre en place CI/CD et optimisations
+- [x] **id011** - Mettre en place CI/CD et optimisations
   - **Dépendances** : id010
   - **Docs** : [09-ci-cd.md](specifications/docs/09-ci-cd.md), [07-code-guidelines.md](specifications/docs/07-code-guidelines.md)
   - **Livrable** :
@@ -135,7 +135,7 @@
 
 ## État du Projet
 
-**Phase actuelle :** Étape 9 - Tests unitaires & tests d'intégration (Terminée)
+**Phase actuelle :** Étape 10 - CI/CD & Polish final (Terminée) ✅
 
 **État du code :**
 - ✅ Projet Android compilable
@@ -158,7 +158,10 @@
 - ✅ Gestion des erreurs réseau
 - ✅ Tests unitaires (163 tests) pour ViewModels, Repositories et modèles de domaine
 - ✅ Tests E2E avec Compose Testing Library
+- ✅ CI/CD avec GitHub Actions (build, lint, tests)
+- ✅ Configuration ProGuard/R8 pour release avec minification
+- ✅ Ktlint pour analyse statique du code
+- ✅ Documentation KDoc
 
-**Prochaines étapes prioritaires :**
-1. Implémenter id011 : CI/CD & Polish final
+**Projet terminé !** 🎉
 

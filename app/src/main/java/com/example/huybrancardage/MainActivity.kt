@@ -15,7 +15,25 @@ import com.example.huybrancardage.navigation.BrancardageNavGraph
 import com.example.huybrancardage.ui.screens.AccueilScreen
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 
+/**
+ * Point d'entrée principal de l'application HuyBrancardage.
+ *
+ * Cette application permet aux brancardiers de :
+ * - Rechercher un patient (par scan de bracelet ou recherche manuelle)
+ * - Consulter les informations du patient et ses alertes médicales
+ * - Prendre des photos ou sélectionner des médias
+ * - Définir la localisation de départ et la destination
+ * - Soumettre une demande de brancardage
+ *
+ * @see BrancardageNavGraph pour le graphe de navigation complet
+ */
 class MainActivity : ComponentActivity() {
+
+    /**
+     * Configure l'activité avec le thème et le graphe de navigation.
+     *
+     * @param savedInstanceState État sauvegardé de l'activité (si restauration)
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -33,6 +51,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Prévisualisation de l'écran d'accueil pour l'IDE.
+ */
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -24,7 +25,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -37,6 +39,14 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    lint {
+        abortOnError = false
+        warningsAsErrors = false
+        checkDependencies = true
+        htmlReport = true
+        xmlReport = true
+        textReport = false
     }
 }
 
