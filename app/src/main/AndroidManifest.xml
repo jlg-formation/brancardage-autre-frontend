@@ -58,6 +58,22 @@
             </intent-filter>
         </activity>
 
+        <!--
+            HelpActivity - Activité d'aide et d'informations
+
+            Cette activité est lancée via un Intent EXPLICITE depuis l'écran d'accueil.
+            Elle n'a pas de filtre d'intent car elle n'est accessible que depuis notre application.
+
+            android:exported="false" : Non accessible depuis d'autres applications
+            android:parentActivityName : Permet la navigation "Up" vers MainActivity
+        -->
+        <activity
+            android:name=".HelpActivity"
+            android:exported="false"
+            android:label="@string/help_title"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/Theme.HuyBrancardage" />
+
         <!-- FileProvider for sharing camera images -->
         <provider
             android:name="androidx.core.content.FileProvider"

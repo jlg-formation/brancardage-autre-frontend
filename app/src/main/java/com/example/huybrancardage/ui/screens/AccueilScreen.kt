@@ -18,15 +18,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.huybrancardage.ui.theme.Blue100
@@ -38,6 +41,7 @@ import com.example.huybrancardage.ui.theme.Gray600
 import com.example.huybrancardage.ui.theme.Gray900
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 import com.example.huybrancardage.ui.theme.White
+import com.example.huybrancardage.util.IntentUtils
 
 /**
  * Écran d'accueil - Menu principal
@@ -49,13 +53,20 @@ fun AccueilScreen(
     onScanBraceletClick: () -> Unit = {},
     onRechercheManuelleClick: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Gray50)
     ) {
-        // Header
-        AccueilTopBar()
+        // Header avec bouton d'aide (Intent explicite)
+        AccueilTopBar(
+            onHelpClick = {
+                // Utilisation d'un Intent EXPLICITE pour ouvrir HelpActivity
+                IntentUtils.openHelpActivity(context)
+            }
+        )
 
         // Contenu scrollable
         Column(
@@ -138,7 +149,9 @@ fun AccueilScreen(
 }
 
 @Composable
-private fun AccueilTopBar() {
+private fun AccueilTopBar(
+    onHelpClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -152,19 +165,35 @@ private fun AccueilTopBar() {
             style = MaterialTheme.typography.titleLarge,
             color = White
         )
-        // Avatar utilisateur
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .clip(CircleShape)
-                .background(Blue100),
-            contentAlignment = Alignment.Center
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "PS",
-                style = MaterialTheme.typography.labelMedium,
-                color = Blue600
-            )
+            // Bouton Aide - Lance HelpActivity via Intent EXPLICITE
+            IconButton(onClick = onHelpClick) {
+                Icon(
+                    imageVector = Icons.Default.HelpOutline,
+                    contentDescription = "Aide",
+                    tint = White,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+
+            // Avatar utilisateur
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .clip(CircleShape)
+                    .background(Blue100),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "PS",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Blue600
+                )
+            }
         }
     }
 }

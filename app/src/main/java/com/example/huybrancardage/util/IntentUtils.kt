@@ -4,12 +4,69 @@ import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import androidx.core.net.toUri
+import com.example.huybrancardage.HelpActivity
 
 /**
  * Utilitaires pour les Intents Android
- * Gère les appels téléphoniques et le partage de contenu
+ * Gère les appels téléphoniques, le partage de contenu et la navigation inter-activités.
+ *
+ * ## Types d'Intents
+ *
+ * ### Intent Explicite
+ * Un Intent explicite spécifie le composant exact (classe) à lancer.
+ * Utilisé pour naviguer entre les activités de la même application.
+ * Exemple : [openHelpActivity]
+ *
+ * ### Intent Implicite
+ * Un Intent implicite déclare une action générale à effectuer.
+ * Le système Android trouve le composant approprié pour l'exécuter.
+ * Exemples : [dialBrancardageService], [shareBrancardageRequest], [sendBrancardageEmail]
+ *
+ * @see <a href="https://developer.android.com/guide/components/intents-filters">Documentation officielle des Intents</a>
  */
 object IntentUtils {
+
+    // ========================================
+    // INTENT EXPLICITE
+    // ========================================
+
+    /**
+     * Ouvre l'écran d'aide (HelpActivity) via un Intent explicite.
+     *
+     * ## Intent Explicite
+     * Un Intent explicite spécifie directement la classe du composant à démarrer.
+     * Il est utilisé lorsque vous savez exactement quelle activité vous voulez lancer,
+     * généralement au sein de votre propre application.
+     *
+     * ### Caractéristiques :
+     * - Spécifie le composant cible via le nom de classe
+     * - Ne nécessite pas de filtre d'intent dans le manifest
+     * - Plus sécurisé car ne peut pas être intercepté par d'autres applications
+     * - Utilisé pour la navigation interne à l'application
+     *
+     * ### Exemple de code :
+     * ```kotlin
+     * val intent = Intent(context, HelpActivity::class.java)
+     * context.startActivity(intent)
+     * ```
+     *
+     * @param context Le contexte Android (Activity ou Application)
+     *
+     * @see dialBrancardageService pour un exemple d'Intent implicite
+     */
+    fun openHelpActivity(context: Context) {
+        // Création d'un Intent EXPLICITE
+        // On spécifie directement la classe de l'activité cible
+        val intent = Intent(context, HelpActivity::class.java)
+
+        // Lancement de l'activité
+        // Pas besoin de vérifier resolveActivity() car on cible notre propre composant
+        context.startActivity(intent)
+    }
+
+    // ========================================
+    // INTENTS IMPLICITES
+    // ========================================
 
     /**
      * Numéro du standard de brancardage de l'hôpital
