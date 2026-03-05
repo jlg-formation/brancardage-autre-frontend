@@ -65,6 +65,7 @@ import com.example.huybrancardage.ui.theme.White
 import com.example.huybrancardage.ui.components.TrackingControl
 import com.example.huybrancardage.ui.viewmodel.BrancardageViewModel
 import com.example.huybrancardage.ui.viewmodel.SubmissionState
+import com.example.huybrancardage.service.TrackingService
 import com.example.huybrancardage.util.IntentUtils
 
 /**
@@ -200,11 +201,35 @@ fun RecapitulatifScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // ============================================================
                 // Section Tracking - Suivi en temps réel du brancardier
-                if (sessionState.isReadyForValidation) {
+                // ============================================================
+                //
+                // ## Objectif pédagogique - Affichage conditionnel
+                //
+                // On affiche le TrackingControl dans deux cas :
+                // 1. La session est prête pour validation (parcours normal)
+                // 2. OU le tracking est déjà actif (arrivée depuis la notification)
+                //
+                // Cela permet à l'utilisateur d'arrêter le suivi même s'il arrive
+                // sur cet écran via la notification (quand l'app a été tuée et
+                // que le BrancardageViewModel a perdu son état).
+                //
+                // On observe directement le StateFlow du Service pour savoir
+                // si le tracking est en cours, indépendamment de l'état local.
+                // ============================================================
+                val isTrackingActive by TrackingService.isTracking.collectAsState()
+                val trackingPatientName by TrackingService.currentPatientName.collectAsState()
+
+                if (sessionState.isReadyForValidation || isTrackingActive) {
                     TrackingSection(
-                        patientName = patient?.nomComplet ?: "Patient",
-                        brancardageId = brancardageId ?: sessionState.patient?.id ?: "demo-${System.currentTimeMillis()}"
+                        // Utilise le nom du patient du service si la session est vide
+                        patientName = patient?.nomComplet
+                            ?: trackingPatientName
+                            ?: "Patient",
+                        brancardageId = brancardageId
+                            ?: sessionState.patient?.id
+                            ?: "demo-${System.currentTimeMillis()}"
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                 }

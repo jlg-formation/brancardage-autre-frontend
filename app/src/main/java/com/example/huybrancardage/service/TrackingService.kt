@@ -308,15 +308,77 @@ class TrackingService : Service() {
     /**
      * Crée la notification persistante du foreground service.
      *
+     * ## Objectif pédagogique - Bundles
+     *
+     * Cette méthode démontre l'utilisation des **Bundles** pour passer des données
+     * entre un Service et une Activity via un Intent.
+     *
+     * ### Qu'est-ce qu'un Bundle ?
+     * Un Bundle est un conteneur clé-valeur qui permet de transporter des données
+     * entre composants Android (Activity, Service, Fragment, BroadcastReceiver).
+     *
+     * ### Types de données supportés par Bundle :
+     * - Primitives : `putInt()`, `putString()`, `putBoolean()`, `putFloat()`, etc.
+     * - Tableaux : `putIntArray()`, `putStringArray()`, etc.
+     * - Parcelable : `putParcelable()` pour les objets personnalisés
+     * - Serializable : `putSerializable()` (moins performant que Parcelable)
+     * - Bundle imbriqué : `putBundle()`
+     *
+     * ### Exemple d'utilisation :
+     * ```kotlin
+     * val bundle = Bundle().apply {
+     *     putString("clé_texte", "valeur")
+     *     putInt("clé_nombre", 42)
+     *     putBoolean("clé_boolean", true)
+     * }
+     * intent.putExtras(bundle)
+     *
+     * // Récupération côté destinataire :
+     * val texte = intent.extras?.getString("clé_texte")
+     * val nombre = intent.extras?.getInt("clé_nombre", 0)
+     * ```
+     *
      * @param locationText Texte à afficher (position actuelle)
      */
     private fun createNotification(locationText: String): Notification {
-        // PendingIntent pour ouvrir l'app quand on clique sur la notification
+        // ============================================================
+        // Création du Bundle avec les données de navigation
+        // ============================================================
+
+        // Le Bundle contient les informations nécessaires pour que MainActivity
+        // sache vers quel écran naviguer quand l'utilisateur clique sur la notification
+        val bundle = android.os.Bundle().apply {
+            // Destination : l'écran de récapitulatif pour pouvoir arrêter le tracking
+            putString(MainActivity.EXTRA_NAVIGATE_TO, MainActivity.DESTINATION_RECAPITULATIF)
+
+            // ID du patient (optionnel, pour référence future)
+            putString(MainActivity.EXTRA_PATIENT_ID, brancardageId)
+        }
+
+        // ============================================================
+        // Création de l'Intent avec le Bundle
+        // ============================================================
+
+        val intent = Intent(this, MainActivity::class.java).apply {
+            // Attache le Bundle à l'Intent
+            putExtras(bundle)
+
+            // Flags importants pour le comportement de l'Activity :
+            // - FLAG_ACTIVITY_SINGLE_TOP : Si l'Activity est déjà en haut de la pile,
+            //   ne pas en créer une nouvelle mais appeler onNewIntent()
+            // - FLAG_ACTIVITY_CLEAR_TOP : Si l'Activity existe déjà dans la pile,
+            //   détruit toutes les activities au-dessus et la ramène au premier plan
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+
+        // PendingIntent encapsule l'Intent pour une exécution différée
+        // FLAG_UPDATE_CURRENT : Met à jour le PendingIntent existant avec les nouveaux extras
+        // FLAG_IMMUTABLE : Le PendingIntent ne peut pas être modifié par d'autres apps
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
-            Intent(this, MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
@@ -326,6 +388,8 @@ class TrackingService : Service() {
             .setOngoing(true)  // Non dismissable par l'utilisateur
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
+            // Ajoute un texte d'aide pour indiquer qu'on peut cliquer
+            .setSubText("Appuyez pour voir le récapitulatif")
             .build()
     }
 
