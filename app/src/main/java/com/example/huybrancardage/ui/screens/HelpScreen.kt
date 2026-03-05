@@ -89,10 +89,10 @@ fun HelpScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Section: À propos
+            // Section : À propos
             AboutSection()
 
-            // Section: Guide d'utilisation
+            // Section : Guide d'utilisation
             UsageGuideSection()
 
             // Section: Contacts
@@ -109,7 +109,7 @@ fun HelpScreen(
                 }
             )
 
-            // Section: Mentions légales
+            // Section : Mentions légales
             LegalSection()
 
             Spacer(modifier = Modifier.height(16.dp))
