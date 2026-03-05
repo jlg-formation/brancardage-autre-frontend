@@ -1,8 +1,21 @@
 Windows Registry Editor Version 5.00
 
+; =========================
+; Clic droit sur un dossier
+; =========================
 [HKEY_CLASSES_ROOT\Directory\shell\AndroidStudio]
 @="Open with Android Studio"
 "Icon"="C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe"
 
 [HKEY_CLASSES_ROOT\Directory\shell\AndroidStudio\command]
 @="\"C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe\" \"%1\""
+
+; =====================================
+; Clic droit sur le fond d’un répertoire
+; =====================================
+[HKEY_CLASSES_ROOT\Directory\Background\shell\AndroidStudio]
+@="Open with Android Studio"
+"Icon"="C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\AndroidStudio\command]
+@="\"C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe\" \"%V\""
