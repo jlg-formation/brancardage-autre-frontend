@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Directory\shell\AndroidStudio]
+@="Open with Android Studio"
+
+[HKEY_CLASSES_ROOT\Directory\shell\AndroidStudio\command]
+@="\"C:\\Program Files\\Android\\Android Studio\\bin\\studio64.exe\" \"%1\""
