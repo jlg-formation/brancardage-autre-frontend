@@ -2,6 +2,7 @@ package com.example.huybrancardage
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,12 +13,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.huybrancardage.data.local.OfflineQueueManager
+import com.example.huybrancardage.data.local.PendingStatus
+import com.example.huybrancardage.data.local.toBrancardageRequest
+import com.example.huybrancardage.data.remote.NetworkResult
+import com.example.huybrancardage.data.repository.BrancardageRepository
 import com.example.huybrancardage.navigation.BrancardageNavGraph
 import com.example.huybrancardage.navigation.Route
+import com.example.huybrancardage.receiver.NetworkReceiver
 import com.example.huybrancardage.ui.screens.AccueilScreen
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Point d'entrée principal de l'application HuyBrancardage.
@@ -36,20 +46,35 @@ import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
  * du service de tracking, l'Intent contient un Bundle avec les données
  * de navigation pour afficher directement l'écran de récapitulatif.
  *
- * ### Exemple de Bundle utilisé :
+ * ## Objectif pédagogique - BroadcastReceiver et NetworkCallback
+ *
+ * Cette activité enregistre un **NetworkCallback** pour surveiller les changements
+ * de connectivité réseau. Cela permet à l'application de :
+ * - Détecter quand le réseau devient indisponible (mode hors ligne)
+ * - Mettre en file d'attente les demandes pendant la déconnexion
+ * - Synchroniser automatiquement quand le réseau revient
+ *
+ * ### Exemple d'enregistrement du NetworkCallback :
  * ```kotlin
- * val bundle = Bundle().apply {
- *     putString(EXTRA_NAVIGATE_TO, DESTINATION_RECAPITULATIF)
- *     putString(EXTRA_PATIENT_ID, "12345")
+ * override fun onCreate(savedInstanceState: Bundle?) {
+ *     super.onCreate(savedInstanceState)
+ *     NetworkReceiver.registerNetworkCallback(this)
  * }
- * intent.putExtras(bundle)
+ *
+ * override fun onDestroy() {
+ *     NetworkReceiver.unregisterNetworkCallback(this)
+ *     super.onDestroy()
+ * }
  * ```
  *
  * @see BrancardageNavGraph pour le graphe de navigation complet
+ * @see NetworkReceiver pour la gestion de la connectivité réseau
  */
 class MainActivity : ComponentActivity() {
 
     companion object {
+        private const val TAG = "MainActivity"
+
         // ============================================================
         // Clés pour les extras du Bundle
         // ============================================================
@@ -82,6 +107,16 @@ class MainActivity : ComponentActivity() {
     private var navController: NavHostController? = null
 
     /**
+     * Gestionnaire de la file d'attente hors ligne.
+     */
+    private lateinit var offlineQueueManager: OfflineQueueManager
+
+    /**
+     * Repository pour l'envoi des demandes de brancardage.
+     */
+    private val brancardageRepository = BrancardageRepository.getInstance()
+
+    /**
      * Configure l'activité avec le thème et le graphe de navigation.
      *
      * @param savedInstanceState État sauvegardé de l'activité (si restauration)
@@ -89,6 +124,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Initialiser le gestionnaire de file d'attente
+        offlineQueueManager = OfflineQueueManager.getInstance(this)
+
+        // ============================================================
+        // Enregistrement du NetworkCallback pour la détection de connectivité
+        // ============================================================
+        // Le NetworkCallback surveille les changements de réseau et permet
+        // de basculer automatiquement entre mode en ligne et hors ligne.
+        NetworkReceiver.registerNetworkCallback(this)
+
+        // ============================================================
+        // Configuration du callback de synchronisation
+        // ============================================================
+        // Quand le réseau revient, ce callback est appelé pour synchroniser
+        // automatiquement les demandes en attente.
+        NetworkReceiver.setOnNetworkRestoredCallback {
+            Log.i(TAG, "🔄 Callback de synchronisation appelé - Lancement de la sync")
+            syncPendingRequests()
+        }
 
         // Extraire les données du Bundle (via Intent extras)
         // Le Bundle est un conteneur clé-valeur pour passer des données
@@ -144,6 +199,19 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
+     * Appelé quand l'activité est détruite.
+     *
+     * ## Objectif pédagogique - Cycle de vie et NetworkCallback
+     * Il est crucial de désenregistrer le NetworkCallback quand l'activité
+     * est détruite pour éviter les fuites de mémoire et les callbacks orphelins.
+     */
+    override fun onDestroy() {
+        // Désenregistrer le NetworkCallback pour éviter les fuites de mémoire
+        NetworkReceiver.unregisterNetworkCallback(this)
+        super.onDestroy()
+    }
+
+    /**
      * Gère la navigation basée sur les données du Bundle.
      *
      * ## Objectif pédagogique
@@ -169,6 +237,70 @@ class MainActivity : ComponentActivity() {
             }
             // Ajouter d'autres destinations ici si nécessaire
             // DESTINATION_MEDIAS -> navController.navigate(Route.Medias.route)
+        }
+    }
+
+    /**
+     * Synchronise les demandes de brancardage en attente avec le serveur.
+     *
+     * ## Objectif pédagogique - BroadcastReceiver et synchronisation
+     *
+     * Cette méthode est appelée automatiquement quand le réseau redevient disponible.
+     * Elle illustre :
+     * 1. L'utilisation de `lifecycleScope` pour les coroutines liées au cycle de vie
+     * 2. La gestion d'une file d'attente locale
+     * 3. La synchronisation automatique des données
+     */
+    private fun syncPendingRequests() {
+        lifecycleScope.launch {
+            // Petit délai pour s'assurer que la connexion est stable
+            delay(1000)
+
+            val waitingRequests = offlineQueueManager.getWaitingRequests()
+
+            if (waitingRequests.isEmpty()) {
+                Log.d(TAG, "📭 Aucune demande en attente à synchroniser")
+                return@launch
+            }
+
+            Log.i(TAG, "🔄 Synchronisation de ${waitingRequests.size} demande(s) en attente")
+
+            var syncedCount = 0
+            var failedCount = 0
+
+            for (pendingRequest in waitingRequests) {
+                // Marquer comme en cours de synchronisation
+                offlineQueueManager.updateStatus(pendingRequest.id, PendingStatus.SYNCING)
+
+                try {
+                    // Convertir et envoyer la demande
+                    val request = pendingRequest.request.toBrancardageRequest()
+                    val result = brancardageRepository.createBrancardage(request)
+
+                    when (result) {
+                        is NetworkResult.Success -> {
+                            Log.i(TAG, "✅ Demande ${pendingRequest.id} synchronisée avec succès")
+                            offlineQueueManager.removeFromQueue(pendingRequest.id)
+                            syncedCount++
+                        }
+                        is NetworkResult.Error -> {
+                            Log.e(TAG, "❌ Échec de synchronisation: ${result.message}")
+                            offlineQueueManager.updateStatus(pendingRequest.id, PendingStatus.FAILED)
+                            failedCount++
+                        }
+                        is NetworkResult.Loading -> { /* Ignore */ }
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Exception lors de la synchronisation", e)
+                    offlineQueueManager.updateStatus(pendingRequest.id, PendingStatus.FAILED)
+                    failedCount++
+                }
+
+                // Petit délai entre les requêtes
+                delay(500)
+            }
+
+            Log.i(TAG, "📊 Synchronisation terminée: $syncedCount réussie(s), $failedCount échouée(s)")
         }
     }
 }

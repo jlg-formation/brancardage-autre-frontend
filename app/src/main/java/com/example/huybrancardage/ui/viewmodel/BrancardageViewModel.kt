@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.huybrancardage.data.local.OfflineQueueManager
+import com.example.huybrancardage.data.local.toSerializable
 import com.example.huybrancardage.data.remote.NetworkResult
 import com.example.huybrancardage.data.repository.BrancardageRepository
 import com.example.huybrancardage.domain.model.BrancardageRequest
@@ -12,6 +14,7 @@ import com.example.huybrancardage.domain.model.Destination
 import com.example.huybrancardage.domain.model.Localisation
 import com.example.huybrancardage.domain.model.Media
 import com.example.huybrancardage.domain.model.Patient
+import com.example.huybrancardage.receiver.NetworkReceiver
 import com.example.huybrancardage.ui.state.BrancardageSessionState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +29,8 @@ sealed class SubmissionState {
     data object Idle : SubmissionState()
     data object Loading : SubmissionState()
     data class Success(val response: BrancardageResponse) : SubmissionState()
+    /** Demande mise en file d'attente (mode hors ligne) */
+    data class Queued(val pendingId: String, val patientName: String) : SubmissionState()
     data class Error(val message: String) : SubmissionState()
 }
 
@@ -113,6 +118,10 @@ class BrancardageViewModel(
 
     /**
      * Valide et soumet la demande de brancardage
+     *
+     * ## Gestion du mode hors ligne
+     * Si le réseau n'est pas disponible, la demande est mise en file d'attente
+     * et sera envoyée automatiquement quand la connexion reviendra.
      */
     fun submitBrancardage(context: Context) {
         Log.d(TAG, "=== submitBrancardage appelé ===")
@@ -133,6 +142,18 @@ class BrancardageViewModel(
             return
         }
 
+        // Vérifier la connectivité réseau
+        val isNetworkAvailable = NetworkReceiver.isNetworkAvailable.value
+        Log.d(TAG, "Réseau disponible: $isNetworkAvailable")
+
+        if (!isNetworkAvailable) {
+            // Mode hors ligne : mettre en file d'attente
+            Log.i(TAG, "📵 Mode hors ligne - Mise en file d'attente")
+            queueBrancardageRequest(context, currentState)
+            return
+        }
+
+        // Mode en ligne : envoi direct
         viewModelScope.launch {
             Log.d(TAG, "Début de la coroutine de soumission")
             _submissionState.value = SubmissionState.Loading
@@ -176,7 +197,15 @@ class BrancardageViewModel(
                     }
                     is NetworkResult.Error -> {
                         Log.e(TAG, "Erreur: ${result.message}")
-                        _submissionState.value = SubmissionState.Error(result.message)
+                        // En cas d'erreur réseau, proposer la mise en file d'attente
+                        if (result.message.contains("réseau", ignoreCase = true) ||
+                            result.message.contains("network", ignoreCase = true) ||
+                            result.message.contains("connection", ignoreCase = true)) {
+                            Log.i(TAG, "📵 Erreur réseau détectée - Mise en file d'attente")
+                            queueBrancardageRequest(context, currentState)
+                        } else {
+                            _submissionState.value = SubmissionState.Error(result.message)
+                        }
                     }
                     is NetworkResult.Loading -> { /* Ignore */ }
                 }
@@ -187,6 +216,40 @@ class BrancardageViewModel(
                 )
             }
         }
+    }
+
+    /**
+     * Met la demande en file d'attente pour envoi ultérieur (mode hors ligne).
+     *
+     * ## Objectif pédagogique
+     * Cette méthode illustre comment gérer gracieusement l'absence de réseau
+     * en sauvegardant les données localement pour un envoi différé.
+     *
+     * @param context Contexte Android
+     * @param state État actuel de la session de brancardage
+     */
+    private fun queueBrancardageRequest(context: Context, state: BrancardageSessionState) {
+        val request = BrancardageRequest(
+            patientId = state.patient!!.id,
+            depart = state.localisation!!,
+            destinationId = state.destination!!.id,
+            mediaIds = emptyList(), // Les médias seront uploadés lors de la synchronisation
+            commentaire = state.commentaire.takeIf { it.isNotBlank() }
+        )
+
+        val offlineQueue = OfflineQueueManager.getInstance(context)
+        val pendingId = offlineQueue.addToQueue(
+            request.toSerializable(
+                patientName = state.patient.nomComplet,
+                destinationName = state.destination.nom
+            )
+        )
+
+        Log.i(TAG, "✅ Demande mise en file d'attente: $pendingId")
+        _submissionState.value = SubmissionState.Queued(
+            pendingId = pendingId,
+            patientName = state.patient.nomComplet
+        )
     }
 
     /**

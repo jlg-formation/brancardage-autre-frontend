@@ -42,4 +42,16 @@ sealed class Route(val route: String) {
             return URLDecoder.decode(encoded, StandardCharsets.UTF_8.toString())
         }
     }
+
+    // Confirmation hors ligne (demande mise en file d'attente)
+    data object ConfirmationQueued : Route("confirmation_queued/{patientName}") {
+        fun createRoute(patientName: String): String {
+            val encodedName = URLEncoder.encode(patientName, StandardCharsets.UTF_8.toString())
+            return "confirmation_queued/$encodedName"
+        }
+
+        fun decodePatientName(encoded: String): String {
+            return URLDecoder.decode(encoded, StandardCharsets.UTF_8.toString())
+        }
+    }
 }

@@ -79,6 +79,7 @@ fun RecapitulatifScreen(
     brancardageId: String? = null, // ID optionnel pour le tracking
     onBackClick: () -> Unit = {},
     onValidateSuccess: (String, String) -> Unit = { _, _ -> }, // trackingNumber, patientName
+    onQueuedSuccess: (String) -> Unit = {}, // Callback pour le mode hors ligne
     onEditPatient: () -> Unit = {},
     onEditTrajet: () -> Unit = {},
     onEditMedias: () -> Unit = {}
@@ -96,11 +97,16 @@ fun RecapitulatifScreen(
             androidx.compose.runtime.mutableStateOf<SubmissionState>(SubmissionState.Idle)
         }
 
-    // Gérer le succès de la soumission
+    // Gérer le succès de la soumission (en ligne ou hors ligne)
     when (val state = submissionState) {
         is SubmissionState.Success -> {
             val patientName = sessionState.patient?.nomComplet ?: "Patient"
             onValidateSuccess(state.response.id, patientName)
+            brancardageViewModel?.resetSubmissionState()
+        }
+        is SubmissionState.Queued -> {
+            // Mode hors ligne : la demande a été mise en file d'attente
+            onQueuedSuccess(state.patientName)
             brancardageViewModel?.resetSubmissionState()
         }
         else -> { /* Continue displaying the screen */ }

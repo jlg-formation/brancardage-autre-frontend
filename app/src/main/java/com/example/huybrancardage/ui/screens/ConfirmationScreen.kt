@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,10 +40,25 @@ private val TealPrimary = Color(0xFF14B8A6)
 private val TealLight = Color(0xFF5EEAD4)
 private val RedPrimary = Color(0xFFDC2626)
 private val RedLight = Color(0xFFFCA5A5)
+private val AmberPrimary = Color(0xFFF59E0B) // Pour le mode hors ligne
+private val AmberLight = Color(0xFFFCD34D)
 
 /**
  * Écran de confirmation de succès
  * Affiché après la validation réussie d'une demande de brancardage
+ *
+ * ## Objectif pédagogique - BroadcastReceiver et mode hors ligne
+ *
+ * Cet écran gère trois états :
+ * 1. **Succès (en ligne)** : La demande a été envoyée au serveur
+ * 2. **En file d'attente (hors ligne)** : La demande est sauvegardée localement
+ * 3. **Erreur** : L'envoi a échoué
+ *
+ * Le paramètre `isQueued` permet d'afficher un message spécifique
+ * informant l'utilisateur que sa demande sera envoyée automatiquement
+ * quand la connexion reviendra.
+ *
+ * @param isQueued true si la demande est en file d'attente (mode hors ligne)
  */
 @Composable
 fun ConfirmationScreen(
@@ -49,12 +66,26 @@ fun ConfirmationScreen(
     patientName: String = "Jean Dupont",
     trackingNumber: String = "BRC-2026-084",
     isSuccess: Boolean = true,
+    isQueued: Boolean = false,
     errorMessage: String? = null,
     onReturnHomeClick: () -> Unit = {}
 ) {
-    val backgroundColor = if (isSuccess) TealPrimary else RedPrimary
-    val lightColor = if (isSuccess) TealLight else RedLight
-    val iconVector = if (isSuccess) Icons.Default.Check else Icons.Default.Close
+    // Déterminer les couleurs et icônes selon l'état
+    val backgroundColor = when {
+        isQueued -> AmberPrimary
+        isSuccess -> TealPrimary
+        else -> RedPrimary
+    }
+    val lightColor = when {
+        isQueued -> AmberLight
+        isSuccess -> TealLight
+        else -> RedLight
+    }
+    val iconVector = when {
+        isQueued -> Icons.Default.Schedule
+        isSuccess -> Icons.Default.Check
+        else -> Icons.Default.Close
+    }
 
     Column(
         modifier = modifier
@@ -66,7 +97,7 @@ fun ConfirmationScreen(
     ) {
         Spacer(modifier = Modifier.weight(1f))
 
-        // Icône de succès/erreur
+        // Icône de succès/erreur/attente
         Box(
             modifier = Modifier
                 .size(96.dp)
@@ -76,7 +107,11 @@ fun ConfirmationScreen(
         ) {
             Icon(
                 imageVector = iconVector,
-                contentDescription = if (isSuccess) "Succès" else "Erreur",
+                contentDescription = when {
+                    isQueued -> "En attente"
+                    isSuccess -> "Succès"
+                    else -> "Erreur"
+                },
                 tint = backgroundColor,
                 modifier = Modifier.size(48.dp)
             )
@@ -86,7 +121,11 @@ fun ConfirmationScreen(
 
         // Titre
         Text(
-            text = if (isSuccess) "Demande envoyée !" else "Erreur",
+            text = when {
+                isQueued -> "Demande enregistrée"
+                isSuccess -> "Demande envoyée !"
+                else -> "Erreur"
+            },
             style = MaterialTheme.typography.headlineMedium,
             color = White,
             fontWeight = FontWeight.Bold
@@ -94,12 +133,14 @@ fun ConfirmationScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Message de confirmation ou d'erreur
+        // Message de confirmation, d'attente ou d'erreur
         Text(
-            text = if (isSuccess) {
-                "La demande de brancardage pour $patientName a bien été transmise. Un brancardier va être assigné sous peu."
-            } else {
-                errorMessage ?: "Une erreur s'est produite lors de l'envoi de la demande."
+            text = when {
+                isQueued -> "La demande de brancardage pour $patientName a été enregistrée. " +
+                        "Elle sera envoyée automatiquement dès que la connexion sera rétablie."
+                isSuccess -> "La demande de brancardage pour $patientName a bien été transmise. " +
+                        "Un brancardier va être assigné sous peu."
+                else -> errorMessage ?: "Une erreur s'est produite lors de l'envoi de la demande."
             },
             style = MaterialTheme.typography.bodyMedium,
             color = lightColor,
@@ -108,15 +149,56 @@ fun ConfirmationScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Numéro de suivi (seulement en cas de succès)
-        if (isSuccess) {
-            TrackingNumberCard(trackingNumber = trackingNumber)
+        // Carte de statut (numéro de suivi ou message hors ligne)
+        when {
+            isQueued -> QueuedStatusCard()
+            isSuccess -> TrackingNumberCard(trackingNumber = trackingNumber)
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
         // Bouton retour à l'accueil
-        ReturnHomeButton(onClick = onReturnHomeClick)
+        ReturnHomeButton(
+            onClick = onReturnHomeClick,
+            accentColor = backgroundColor
+        )
+    }
+}
+
+/**
+ * Carte affichant le statut "en file d'attente" pour le mode hors ligne.
+ */
+@Composable
+private fun QueuedStatusCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(White.copy(alpha = 0.2f))
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            imageVector = Icons.Default.CloudOff,
+            contentDescription = null,
+            tint = White,
+            modifier = Modifier.size(32.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "MODE HORS LIGNE",
+            style = MaterialTheme.typography.labelSmall,
+            color = AmberLight,
+            letterSpacing = 2.sp
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "En attente de connexion",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold
+            ),
+            color = White
+        )
     }
 }
 
@@ -149,7 +231,10 @@ private fun TrackingNumberCard(trackingNumber: String) {
 }
 
 @Composable
-private fun ReturnHomeButton(onClick: () -> Unit) {
+private fun ReturnHomeButton(
+    onClick: () -> Unit,
+    accentColor: Color = TealPrimary
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -162,7 +247,7 @@ private fun ReturnHomeButton(onClick: () -> Unit) {
         Text(
             text = "Retour à l'accueil",
             style = MaterialTheme.typography.labelLarge,
-            color = TealPrimary,
+            color = accentColor,
             fontWeight = FontWeight.Bold
         )
     }
@@ -173,6 +258,17 @@ private fun ReturnHomeButton(onClick: () -> Unit) {
 fun ConfirmationScreenPreview() {
     HuyBrancardageTheme {
         ConfirmationScreen()
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun ConfirmationScreenQueuedPreview() {
+    HuyBrancardageTheme {
+        ConfirmationScreen(
+            isQueued = true,
+            patientName = "Marie Laurent"
+        )
     }
 }
 

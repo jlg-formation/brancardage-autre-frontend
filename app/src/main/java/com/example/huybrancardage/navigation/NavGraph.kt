@@ -181,6 +181,14 @@ fun BrancardageNavGraph(
                         }
                     }
                 },
+                onQueuedSuccess = { patientName ->
+                    // Mode hors ligne : naviguer vers l'écran de confirmation spécifique
+                    navController.navigate(Route.ConfirmationQueued.createRoute(patientName)) {
+                        popUpTo(Route.Accueil.route) {
+                            saveState = false
+                        }
+                    }
+                },
                 onEditPatient = {
                     // Retourner au dossier patient pour modifier
                     navController.popBackStack(Route.DossierPatient.route, inclusive = false)
@@ -214,6 +222,38 @@ fun BrancardageNavGraph(
                 trackingNumber = trackingNumber,
                 patientName = patientName,
                 isSuccess = true,
+                onReturnHomeClick = {
+                    // Réinitialiser la session et retourner à l'accueil
+                    brancardageViewModel.resetSession()
+                    mediaViewModel.clearMedias()
+                    locationViewModel.clear()
+                    destinationViewModel.clearSelection()
+
+                    navController.navigate(Route.Accueil.route) {
+                        popUpTo(Route.Accueil.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
+
+        // ==================== CONFIRMATION HORS LIGNE ====================
+        composable(
+            route = Route.ConfirmationQueued.route,
+            arguments = listOf(
+                navArgument("patientName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val patientName = backStackEntry.arguments?.getString("patientName")?.let {
+                Route.ConfirmationQueued.decodePatientName(it)
+            } ?: "Patient"
+
+            ConfirmationScreen(
+                trackingNumber = "En attente",
+                patientName = patientName,
+                isSuccess = true,
+                isQueued = true, // Indique que c'est une demande en file d'attente
                 onReturnHomeClick = {
                     // Réinitialiser la session et retourner à l'accueil
                     brancardageViewModel.resetSession()
