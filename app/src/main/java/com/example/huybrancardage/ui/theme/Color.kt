@@ -25,3 +25,9 @@ val Gray900 = Color(0xFF111827)
 // Blancs et noirs
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
+
+// Verts (pour succès, tracking, etc.)
+val Green100 = Color(0xFFDCFCE7)
+val Green500 = Color(0xFF22C55E)
+val Green600 = Color(0xFF16A34A)
+

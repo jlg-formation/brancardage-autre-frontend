@@ -10,9 +10,18 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- Location permissions for GPS -->
+    <!-- Location permissions for GPS and WiFi scanning -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
+    <!-- WiFi permissions for indoor location tracking -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+    <!-- Foreground Service permissions -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Package visibility declarations for Android 11+ (API 30+) -->
     <!-- Required to use resolveActivity() for implicit intents -->
@@ -84,6 +93,22 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!--
+            TrackingService - Service de suivi en temps réel du brancardier
+
+            Ce service foreground :
+            - Scanne périodiquement les bornes WiFi pour la géolocalisation indoor
+            - Affiche une notification persistante avec la position actuelle
+            - Envoie les mises à jour de position au serveur
+
+            android:foregroundServiceType="location" : Requis depuis Android 10 pour
+            accéder à la localisation depuis un foreground service.
+        -->
+        <service
+            android:name=".service.TrackingService"
+            android:foregroundServiceType="location"
+            android:exported="false" />
     </application>
 
 </manifest>

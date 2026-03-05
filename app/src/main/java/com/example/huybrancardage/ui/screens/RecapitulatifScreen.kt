@@ -58,9 +58,11 @@ import com.example.huybrancardage.ui.theme.Gray100
 import com.example.huybrancardage.ui.theme.Gray200
 import com.example.huybrancardage.ui.theme.Gray50
 import com.example.huybrancardage.ui.theme.Gray500
+import com.example.huybrancardage.ui.theme.Gray600
 import com.example.huybrancardage.ui.theme.Gray900
 import com.example.huybrancardage.ui.theme.HuyBrancardageTheme
 import com.example.huybrancardage.ui.theme.White
+import com.example.huybrancardage.ui.components.TrackingControl
 import com.example.huybrancardage.ui.viewmodel.BrancardageViewModel
 import com.example.huybrancardage.ui.viewmodel.SubmissionState
 import com.example.huybrancardage.util.IntentUtils
@@ -73,6 +75,7 @@ import com.example.huybrancardage.util.IntentUtils
 fun RecapitulatifScreen(
     modifier: Modifier = Modifier,
     brancardageViewModel: BrancardageViewModel? = null,
+    brancardageId: String? = null, // ID optionnel pour le tracking
     onBackClick: () -> Unit = {},
     onValidateSuccess: (String, String) -> Unit = { _, _ -> }, // trackingNumber, patientName
     onEditPatient: () -> Unit = {},
@@ -196,6 +199,15 @@ fun RecapitulatifScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(24.dp))
+
+                // Section Tracking - Suivi en temps réel du brancardier
+                if (sessionState.isReadyForValidation) {
+                    TrackingSection(
+                        patientName = patient?.nomComplet ?: "Patient",
+                        brancardageId = brancardageId ?: sessionState.patient?.id ?: "demo-${System.currentTimeMillis()}"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 // Boutons d'action secondaires (Appeler et Partager)
                 ActionButtonsRow(
@@ -578,6 +590,60 @@ private fun ActionSecondaryButton(
             text = text,
             style = MaterialTheme.typography.labelLarge,
             color = Blue600
+        )
+    }
+}
+
+/**
+ * Section de suivi en temps réel du brancardier.
+ *
+ * Cette section permet de :
+ * - Démarrer/arrêter le suivi de position via WiFi
+ * - Afficher la position actuelle du brancardier
+ *
+ * Le suivi utilise un Foreground Service qui scanne les bornes WiFi
+ * pour déterminer la position indoor du brancardier.
+ */
+@Composable
+private fun TrackingSection(
+    patientName: String,
+    brancardageId: String,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(White)
+            .padding(16.dp)
+    ) {
+        // En-tête de section
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "SUIVI DU TRANSPORT",
+                style = MaterialTheme.typography.labelSmall,
+                color = Gray500,
+                letterSpacing = 1.sp
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Activez le suivi pour permettre au superviseur de suivre votre position en temps réel.",
+            style = MaterialTheme.typography.bodySmall,
+            color = Gray600
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Composant de contrôle du tracking
+        TrackingControl(
+            patientName = patientName,
+            brancardageId = brancardageId
         )
     }
 }
